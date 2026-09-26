@@ -5,7 +5,20 @@ const $=id=>document.getElementById(id);
 const key=(x,y)=>`${x},${y}`;
 const get=(x,y)=>board.get(key(x,y));
 
-fetch('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt').then(r=>r.text()).then(t=>{const ws=t.split(/\r?\n/).map(w=>w.trim()).filter(w=>/^[a-z]+$/i.test(w)&&w.length>=3&&w.length<=12);dictWords=ws.map(w=>w.toUpperCase());dict=new Set(dictWords);reset();}).catch(()=>{dictWords=['CAT','CATS','DOG','DOGS','SIX','SIXES','WORD','WORDS','GAME','GAMES','QUIZ','QUARTZ','WATER','LETTER','LETTERS','CROSS','CROSSWORD'];dict=new Set(dictWords);reset();msg('Dictionary fallback loaded.');});
+Promise.all([
+  fetch('https://raw.githubusercontent.com/dolph/dictionary/master/enable1.txt').then(r=>{if(!r.ok)throw new Error('ENABLE1 failed');return r.text()}),
+  fetch('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt').then(r=>{if(!r.ok)throw new Error('common list failed');return r.text()})
+]).then(([allText,commonText])=>{
+  const allWords=allText.split(/\r?\n/).map(w=>w.trim()).filter(w=>/^[a-z]+$/i.test(w)&&w.length>=3&&w.length<=16).map(w=>w.toUpperCase());
+  const commonWords=commonText.split(/\r?\n/).map(w=>w.trim()).filter(w=>/^[a-z]+$/i.test(w)&&w.length>=3&&w.length<=16).map(w=>w.toUpperCase());
+  dict=new Set(allWords);
+  dictWords=[...new Set(commonWords.concat(allWords.filter(w=>/[JQXZVK]/.test(w)&&w.length<=9)))];
+  reset();
+  msg('ENABLE1 dictionary loaded.');
+}).catch(()=>{
+  dictWords=['CAT','CATS','DOG','DOGS','SIX','SIXES','WORD','WORDS','GAME','GAMES','QUIZ','QUARTZ','WATER','LETTER','LETTERS','CROSS','CROSSWORD'];
+  dict=new Set(dictWords);reset();msg('Dictionary fallback loaded.');
+});
 
 function reset(){board=new Map();players=[{got:new Set()},{got:new Set()}];turn=0;moveHistory=[];placements=[];strategyStats={humanMoves:0,nonGreedy:0,totalGain:0,bestGain:0};gameOver=false;render();$('wordInput').disabled=false;$('playBtn').disabled=false;$('wordInput').focus();}
 function lockedLetters(){const s=new Set();for(const m of moveHistory.slice(-2))for(const l of m.newLetters)s.add(l);return s;}
