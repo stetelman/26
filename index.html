@@ -5,7 +5,7 @@
 <div class='app'>
 <header>
   <div><h1>26 OUT</h1><div class='sub'>free-form crossword race</div></div>
-  <button id='newGame' class='ghost'>New game</button>
+  <div><button id='modeBtn' class='ghost'>VS BOT</button> <button id='newGame' class='ghost'>New game</button></div>
 </header>
 <section class='meter'>
   <div class='player p1'><div class='label'>PLAYER 1 <span id='p1count'>0/26</span></div><div class='bar'><i id='p1bar'></i></div><div class='chance' id='p1chance'>50%</div></div>
@@ -21,7 +21,7 @@
 </section>
 <section><div class='sectionTitle'>YOUR ALPHABET</div><div id='alphabet' class='alphabet'></div></section>
 <section><div class='sectionTitle'>KEYBOARD</div><div id='keyboard' class='keyboard'></div><div class='legend'><span><b class='need'></b>needed</span><span><b class='lockedNeed'></b>needed + locked</span><span><b class='earned'></b>earned</span><span><b class='locked'></b>earned + locked</span></div></section>
-<section class='history'><div class='sectionTitle'>RECENT MOVES</div><div id='history'></div></section>
+<section class='history'><div class='sectionTitle'>STRATEGY TEST</div><div id='strategyStats' class='move'>Play a few turns to compare your choices with raw letter coverage.</div><div class='sectionTitle'>RECENT MOVES</div><div id='history'></div></section>
 </div>
 <script src='game.js'></script>
 </body></html>
