@@ -1,0 +1,27 @@
+<!doctype html>
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>26 Out Prototype</title><link rel='stylesheet' href='style.css'></head>
+<body>
+<div class='app'>
+<header>
+  <div><h1>26 OUT</h1><div class='sub'>free-form crossword race</div></div>
+  <button id='newGame' class='ghost'>New game</button>
+</header>
+<section class='meter'>
+  <div class='player p1'><div class='label'>PLAYER 1 <span id='p1count'>0/26</span></div><div class='bar'><i id='p1bar'></i></div><div class='chance' id='p1chance'>50%</div></div>
+  <div class='vs'>WIN CHANCE</div>
+  <div class='player p2'><div class='label'>PLAYER 2 <span id='p2count'>0/26</span></div><div class='bar'><i id='p2bar'></i></div><div class='chance' id='p2chance'>50%</div></div>
+</section>
+<section class='boardWrap'><div id='board' class='board'></div></section>
+<section class='turnPanel'>
+  <div class='turnLine'><span id='turnName'>PLAYER 1</span><span id='status'>Type a word</span></div>
+  <div class='entry'><input id='wordInput' maxlength='16' autocomplete='off' spellcheck='false' placeholder='TYPE A WORD'><button id='playBtn'>PLAY</button></div>
+  <div class='help' id='help'>Place 2–7 new letters. Existing letters may be reused.</div>
+  <button id='altBtn' class='ghost alt hidden'>Other placements</button>
+</section>
+<section><div class='sectionTitle'>YOUR ALPHABET</div><div id='alphabet' class='alphabet'></div></section>
+<section><div class='sectionTitle'>KEYBOARD</div><div id='keyboard' class='keyboard'></div><div class='legend'><span><b class='need'></b>needed</span><span><b class='lockedNeed'></b>needed + locked</span><span><b class='earned'></b>earned</span><span><b class='locked'></b>earned + locked</span></div></section>
+<section class='history'><div class='sectionTitle'>RECENT MOVES</div><div id='history'></div></section>
+</div>
+<script src='game.js'></script>
+</body></html>
