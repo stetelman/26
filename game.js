@@ -142,7 +142,29 @@ function winChance(){
   const d=score[0]-score[1],p1=1/(1+Math.exp(-d/3.2));return [Math.round(p1*100),100-Math.round(p1*100)];
 }
 function render(){renderBoard();renderUI();}
-function renderBoard(){const el=$('board');el.innerHTML='';for(const [k,ch] of board){const [x,y]=k.split(',').map(Number),d=document.createElement('div');d.className='tile';d.textContent=ch;d.style.left=(ORIGIN+x*CELL)+'px';d.style.top=(245+y*CELL)+'px';el.appendChild(d)}if(board.size){setTimeout(()=>{const xs=[...board.keys()].map(k=>+k.split(',')[0]),ys=[...board.keys()].map(k=>+k.split(',')[1]);el.parentElement.scrollLeft=Math.max(0,ORIGIN+((Math.min(...xs)+Math.max(...xs))/2)*CELL-el.parentElement.clientWidth/2);el.parentElement.scrollTop=Math.max(0,245+((Math.min(...ys)+Math.max(...ys))/2)*CELL-el.parentElement.clientHeight/2)},0)}}
+function renderBoard(){
+  const el=$('board');el.innerHTML='';
+  if(!board.size)return;
+  const cells=[...board.entries()].map(([k,ch])=>{const [x,y]=k.split(',').map(Number);return {x,y,ch}});
+  const xs=cells.map(c=>c.x),ys=cells.map(c=>c.y);
+  const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
+  const cols=maxX-minX+1,rows=maxY-minY+1;
+  const wrap=el.parentElement;
+  const pad=18;
+  const availW=Math.max(80,wrap.clientWidth-pad*2),availH=Math.max(80,wrap.clientHeight-pad*2);
+  const size=Math.max(16,Math.min(34,Math.floor(Math.min(availW/cols,availH/rows))));
+  const gap=Math.max(1,Math.round(size*.06));
+  const boardW=cols*size,boardH=rows*size;
+  const left=(wrap.clientWidth-boardW)/2,top=(wrap.clientHeight-boardH)/2;
+  for(const c of cells){
+    const d=document.createElement('div');d.className='tile';d.textContent=c.ch;
+    d.style.width=(size-gap)+'px';d.style.height=(size-gap)+'px';
+    d.style.fontSize=Math.max(10,Math.floor(size*.55))+'px';
+    d.style.left=(left+(c.x-minX)*size)+'px';
+    d.style.top=(top+(c.y-minY)*size)+'px';
+    el.appendChild(d);
+  }
+}
 function renderUI(){const me=current(),lock=lockedLetters();$('turnName').textContent=`PLAYER ${turn%2+1}`;$('status').textContent=`${lock.size?lock.size+' letters locked':'Opening move'}`;
   players.forEach((p,i)=>{$(`p${i+1}count`).textContent=`${p.got.size}/26`;$(`p${i+1}bar`).style.width=(p.got.size/26*100)+'%'});const [a,b]=winChance();$('p1chance').textContent=a+'%';$('p2chance').textContent=b+'%';
   const rows=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];const kb=$('keyboard');kb.innerHTML='';for(const row of rows){const r=document.createElement('div');r.className='row';for(const l of row){const d=document.createElement('div');const need=!me.got.has(l),locked=lock.has(l);d.className='key '+(need?(locked?'lockedNeed':'need'):(locked?'locked':'earned'));d.textContent=l;r.appendChild(d)}kb.appendChild(r)}
