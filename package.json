@@ -1,0 +1,1 @@
+{"name":"26-out-prototype","private":true,"version":"0.1.0","scripts":{"dev":"npx serve .","build":"echo static build ready"}}
