@@ -212,3 +212,29 @@ header h1{color:#25231f}
   .rankCard{padding:22px 18px 18px}
   .rankCard h2{font-size:17px;margin-bottom:14px}
 }
+
+.modeModal{display:none;position:fixed;inset:0;background:rgba(74,68,60,.6);z-index:25;align-items:center;justify-content:center;padding:18px}
+.showMode .modeModal{display:flex}
+.modeCard{position:relative;width:min(400px,92vw);background:#f8f4ec;border:1px solid var(--line);border-radius:16px;padding:22px}
+.modeCard>.sub{font-size:10px;letter-spacing:.17em;margin-bottom:7px}
+.modeCard h2{margin:0 0 14px;font-size:17px;line-height:1.05;font-weight:900;letter-spacing:.015em;text-transform:uppercase}
+.modeChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modeChoice{background:#fffdf8;border:1px solid var(--line);border-radius:10px;padding:13px 11px;text-align:left;color:var(--text)}
+.modeChoice strong{display:block;font-size:12px;letter-spacing:.04em;margin-bottom:3px}
+.modeChoice span{display:block;font-size:9px;color:var(--muted)}
+.modeChoice:first-child{grid-column:1/-1;border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.rankCard{max-height:none;overflow:visible}
+@media(max-width:600px){
+  .rankModal{padding:10px}
+  .rankCard{width:min(430px,96vw);padding:18px 16px 14px}
+  .rankCard>.sub{margin-bottom:4px}
+  .rankCard h2{font-size:16px;margin-bottom:9px}
+  .ladderStats{padding:6px 0;margin-bottom:7px}
+  .rankList{gap:5px}
+  .rankOption{padding:7px 9px;min-height:0}
+  .rankOption .botBadge{width:25px;height:25px}
+  .rankHint{margin-top:9px}
+}
+@media(max-height:740px){
+  .rankCard{transform:scale(.92);transform-origin:center}
+}
