@@ -114,7 +114,12 @@ function winChance(){
  const a=Math.max(1,Math.min(99,Math.round(p1*100)));
  return[a,100-a]
 }
-function render(){renderUI();renderWords()}
+function renderHelp(){
+ const h=$('help');
+ if(turn===0&&!gameOver)h.textContent='Opening word: locks letters · scores 0.';
+ else h.textContent='Letters in the previous word are unavailable this turn.';
+}
+function render(){renderUI();renderWords();renderHelp()}
 function renderWords(){
  const el=$('wordStream');if(!moveHistory.length){el.className='wordStream';el.innerHTML='<div class="emptyStage startStage">START</div>';return}
  const lock=lockedLetters(),recent=moveHistory.slice(-10);
@@ -141,7 +146,6 @@ function renderWords(){
 }
 function renderUI(){
  const me=current(),lock=lockedLetters();
- $('openingNote').classList.toggle('show',turn===0&&!gameOver);
  const meter=$('meter');
  meter.className='meter'+(players.length>2?' multi':'');
  if(players.length===2){
@@ -173,7 +177,7 @@ function renderUI(){
  }
 }
 function del(){if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
-function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Letters in the previous word are unavailable this turn.'},2200)}
+function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(renderHelp,2200)}
 function haptic(pattern){try{if(navigator.vibrate)navigator.vibrate(pattern)}catch{}}
 function tone(freq=520,duration=.05,volume=.035){
  try{
