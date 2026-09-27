@@ -1,5 +1,6 @@
 const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 let dict=new Set(), commonWords=[], players=[], turn=0, moveHistory=[], lockUntil=new Map(), gameOver=false, mode='bot', typedWord='';
+const BOT_HISTORY_KEY='typesetBotRecentGames';
 const $=id=>document.getElementById(id);
 
 Promise.all([
@@ -38,17 +39,30 @@ function commit(word,source){
  turn++;render();
  if(mode==='bot'&&turn%2===1&&!gameOver){msg('Bot is thinking…');setTimeout(botMove,160)}
 }
+function getBotHistory(){try{return JSON.parse(localStorage.getItem(BOT_HISTORY_KEY)||'[]')}catch{return []}}
+function saveBotGameWords(words){
+ const history=getBotHistory();
+ history.push([...new Set(words)]);
+ while(history.length>5)history.shift();
+ localStorage.setItem(BOT_HISTORY_KEY,JSON.stringify(history));
+}
+function recentBotWords(){return new Set(getBotHistory().flat())}
 function botMove(){
  if(gameOver||mode!=='bot'||turn%2!==1)return;
- const lock=lockedLetters();let best=null,bestScore=-1e9;
- const pool=commonWords.slice(0,2400);
+ const recent=recentBotWords(),usedThisGame=new Set(moveHistory.filter(m=>m.source==='bot').map(m=>m.word));
+ const candidates=[];
+ const pool=commonWords.slice(0,5000);
  for(const w of pool){
+   if(recent.has(w)||usedThisGame.has(w))continue;
    const gain=gainedBy(w,current());let rare=0;for(const ch of gain)rare+=({Q:3,Z:2.6,X:2.3,J:2.2,K:1.4,V:1.3}[ch]||1);
    const score=gain.length*6+rare+w.length*.15;
-   if(score>bestScore){bestScore=score;best=w}
+   candidates.push({w,score});
  }
- if(!best){msg('Bot passes.');turn++;render();return}
- commit(best,'bot');
+ candidates.sort((a,b)=>b.score-a.score);
+ const top=candidates.slice(0,20);
+ const pick=top.length?top[Math.floor(Math.random()*Math.min(8,top.length))]:null;
+ if(!pick){msg('Bot passes.');turn++;render();return}
+ commit(pick.w,'bot');
 }
 function winChance(){
  const lock=lockedLetters();const scores=players.map((p,i)=>p.got.size-[...lock].filter(l=>!p.got.has(l)).length*.22+(i===turn%2?.25:0));
@@ -86,7 +100,7 @@ function renderUI(){
 }
 function del(){if(gameOver||(mode==='bot'&&turn%2===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
 function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Locked letters may be used but do not score. Using one while locked does not reset its timer.'},2200)}
-function showWinner(i){const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
+function showWinner(i){const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
 $('newGame').onclick=reset;
 $('inlineDelete').onclick=del;
 $('modeBtn').onclick=()=>{mode=mode==='bot'?'local':'bot';$('modeBtn').textContent=mode==='bot'?'VS BOT':'2 PLAYER';reset()};
