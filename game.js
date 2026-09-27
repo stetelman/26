@@ -293,9 +293,10 @@ function renderRanks(){
  if(botRank>unlocked)botRank=unlocked;
  $('rankBtn').innerHTML='<span class="rankLetter">'+String.fromCharCode(65+botRank)+'</span><span class="rankDot">·</span><span class="rankDescriptor">'+BOT_RANKS[botRank].name.toUpperCase()+'</span>';
  refreshModeLocks();
- $('rankList').innerHTML=`<div class="ladderStats"><span>STREAK <strong>${botStreak()}</strong></span><span>BEST <strong>${botBestStreak()}</strong></span></div>`+BOT_RANKS.map((r,i)=>{
+ $('ladderStats').innerHTML='<span>STREAK <strong>'+botStreak()+'</strong></span><span>BEST <strong>'+botBestStreak()+'</strong></span>';
+ $('rankList').innerHTML=BOT_RANKS.map((r,i)=>{
    const locked=i>unlocked;
-   return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''}><span class="rankNumber botBadge badge-${i}">${r.icon}</span><span class="rankName">${r.name}</span><span class="rankState">${locked?'LOCKED':i===botRank?'SELECTED':'PLAY'}</span></button>`;
+   return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''} aria-label="${r.name}${locked?' locked':i===botRank?' selected':''}"><span class="rankNumber">${r.icon}</span><span class="rankName">${r.name}</span>${i===botRank?'<span class="rankCheck">✓</span>':locked?'<span class="rankLock">·</span>':''}</button>`;
  }).join('');
  [...document.querySelectorAll('.rankOption:not([disabled])')].forEach(b=>b.onclick=()=>{botRank=+b.dataset.rank;document.body.classList.remove('showRanks');renderRanks();reset()});
 }
