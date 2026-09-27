@@ -218,7 +218,21 @@ function showWinner(i){
 $('newGame').onclick=reset;
 $('inlineDelete').onclick=()=>{haptic(7);del()};
 $('inlinePlay').onclick=()=>{haptic(14);tone(460,.035,.02);play()};
-$('modeBtn').onclick=()=>document.body.classList.add('showMode');
+function refreshModeLocks(){
+ const unlocked=unlockedBotRank();
+ const three=$('.modeChoice[data-mode="3"]'),four=$('.modeChoice[data-mode="4"]');
+ if(three){
+   const open3=unlocked>=3;
+   three.disabled=!open3;three.classList.toggle('lockedMode',!open3);
+   three.querySelector('span').textContent=open3?'Pass & play':'Unlock at Stenographer';
+ }
+ if(four){
+   const open4=unlocked>=5;
+   four.disabled=!open4;four.classList.toggle('lockedMode',!open4);
+   four.querySelector('span').textContent=open4?'Pass & play':'Unlock at Proofreader';
+ }
+}
+$('modeBtn').onclick=()=>{refreshModeLocks();document.body.classList.add('showMode')};
 $('closeMode').onclick=()=>document.body.classList.remove('showMode');
 $('modeModal').onclick=e=>{if(e.target.id==='modeModal')document.body.classList.remove('showMode')};
 [...document.querySelectorAll('.modeChoice')].forEach(b=>b.onclick=()=>{
@@ -254,6 +268,7 @@ function renderRanks(){
  const unlocked=unlockedBotRank();
  if(botRank>unlocked)botRank=unlocked;
  $('rankBtn').innerHTML='<span class="botBadge badge-'+botRank+' tiny">'+BOT_RANKS[botRank].icon+'</span>'+BOT_RANKS[botRank].name.toUpperCase();
+ refreshModeLocks();
  $('rankList').innerHTML=`<div class="ladderStats"><span>STREAK <strong>${botStreak()}</strong></span><span>BEST <strong>${botBestStreak()}</strong></span></div>`+BOT_RANKS.map((r,i)=>{
    const locked=i>unlocked;
    return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''}><span class="rankNumber botBadge badge-${i}">${r.icon}</span><span class="rankName">${r.name}</span><span class="rankState">${locked?'LOCKED':i===botRank?'SELECTED':'PLAY'}</span></button>`;
