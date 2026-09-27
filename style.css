@@ -857,3 +857,21 @@ header h1{color:#25231f}
 }
 
 .openingNote{display:none!important}
+
+.entryTextBlock{
+  flex:1;
+  min-width:0;
+}
+.entryTextBlock .directWord{
+  width:100%;
+}
+.entryTextBlock .help{
+  margin-top:3px;
+}
+@media(max-width:600px){
+  .entryTextBlock .help{
+    margin-top:2px;
+    font-size:7px;
+    line-height:1.15;
+  }
+}
