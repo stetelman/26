@@ -1458,3 +1458,21 @@ header .brandBlock>.sub{display:none!important}
     font-size:0!important;
   }
 }
+
+/* Desktop tutorial: true centered block with left-aligned lines */
+@media(min-width:601px){
+  .tutorialStage{
+    width:max-content!important;
+    max-width:92%!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    align-items:stretch!important;
+    text-align:left!important;
+  }
+  .tutorialLine{
+    width:auto!important;
+    max-width:none!important;
+    text-align:left!important;
+    text-align-last:auto!important;
+  }
+}
