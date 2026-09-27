@@ -116,7 +116,7 @@ function winChance(){
 }
 function render(){renderUI();renderWords()}
 function renderWords(){
- const el=$('wordStream');if(!moveHistory.length){el.className='wordStream';el.innerHTML='<div class="emptyStage openingStage"><strong>OPENING WORD</strong><span>LOCKS LETTERS · SCORES 0</span></div>';return}
+ const el=$('wordStream');if(!moveHistory.length){el.className='wordStream';el.innerHTML='<div class="emptyStage startStage">START</div>';return}
  const lock=lockedLetters(),recent=moveHistory.slice(-10);
  if(players.length<=2){
    el.className='wordStream';
@@ -141,6 +141,7 @@ function renderWords(){
 }
 function renderUI(){
  const me=current(),lock=lockedLetters();
+ $('openingNote').classList.toggle('show',turn===0&&!gameOver);
  const meter=$('meter');
  meter.className='meter'+(players.length>2?' multi':'');
  if(players.length===2){
