@@ -635,3 +635,42 @@ header h1{color:#25231f}
   .brandBlock h1{font-size:21px}
   .brandBlock .sub{font-size:6.3px;letter-spacing:.08em}
 }
+
+/* Typed TYPESET wordmark */
+.typedTitle{display:flex}
+.typedTitle span{
+  display:inline-block;
+  opacity:0;
+  transform:translateY(2px);
+  animation:titleType .14s steps(1,end) forwards;
+  animation-delay:calc(var(--i) * 90ms + 100ms);
+}
+.typedTitle:after{
+  content:"";
+  width:2px;
+  height:.82em;
+  margin-left:3px;
+  align-self:center;
+  background:var(--text);
+  opacity:0;
+  animation:titleCursor 1.05s steps(1,end) 100ms 2;
+}
+@keyframes titleType{to{opacity:1;transform:none}}
+@keyframes titleCursor{
+  0%,45%{opacity:1}
+  46%,100%{opacity:0}
+}
+
+/* Locked multiplayer rewards */
+.modeChoice.lockedMode{
+  opacity:.46;
+  cursor:not-allowed;
+  box-shadow:none!important;
+}
+.modeChoice.lockedMode strong:after{
+  content:"  LOCKED";
+  font-size:7px;
+  letter-spacing:.08em;
+  color:var(--muted);
+}
+.modeChoice:disabled:active{transform:none}
