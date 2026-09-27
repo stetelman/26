@@ -144,19 +144,18 @@ function renderWords(){
    el.className='wordStream';
    const seenTutorial=localStorage.getItem(TYPESET_TUTORIAL_KEY)==='1';
    if(seenTutorial){
-     el.innerHTML='<div class="emptyStage startStage">START</div>';
+     el.innerHTML='<div class="emptyStage startStage"></div>';
    }else{
      const lines=[
        'PLAY A THREE TO SEVEN LETTER WORD',
        'COLLECT NEW LETTERS',
        'LAST WORD LOCKS THE NEXT TURN',
-       'FIRST TO A–Z WINS'
+       'FIRST TO USE EVERY LETTER WINS'
      ];
      const token=++tutorialToken;
      clearTimeout(tutorialTimer);
      el.innerHTML='<div class="emptyStage tutorialStage">'+
-       lines.map((_,i)=>'<div class="tutorialLine" data-line="'+i+'"></div>').join('')+
-       '<div class="tutorialStart">START</div></div>';
+       lines.map((_,i)=>'<div class="tutorialLine" data-line="'+i+'"></div>').join('')+'</div>';
 
      let lineIndex=0,charIndex=0;
      const typeNext=()=>{
@@ -176,12 +175,6 @@ function renderWords(){
        charIndex=0;
        if(lineIndex<lines.length){
          tutorialTimer=setTimeout(typeNext,180);
-       }else{
-         tutorialTimer=setTimeout(()=>{
-           if(token!==tutorialToken)return;
-           const start=el.querySelector('.tutorialStart');
-           if(start)start.classList.add('show');
-         },220);
        }
      };
      tutorialTimer=setTimeout(typeNext,120);
@@ -230,7 +223,7 @@ function renderUI(){
  $('turnName').textContent=mode==='bot'?(activePlayer()===0?'YOU':BOT_RANKS[botRank].name.toUpperCase()):'PLAYER '+(activePlayer()+1);
  const blocked=gameOver||passWait||(mode==='bot'&&activePlayer()===1);
  $('status').textContent=blocked?(mode==='bot'?'Bot turn':'Pass device'):'Your turn';
- const display=$('wordDisplay');display.innerHTML=(typedWord?typedWord:'TYPE A WORD')+'<span class="cursor">|</span>';display.classList.toggle('empty',!typedWord);
+ const display=$('wordDisplay');const placeholder=turn===0?'START':'TYPE A WORD';display.innerHTML=(typedWord?typedWord:placeholder)+'<span class="cursor">|</span>';display.classList.toggle('empty',!typedWord);
  const kb=$('keyboard');kb.innerHTML='';
  for(const row of ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM']){
    const r=document.createElement('div');r.className='row';
