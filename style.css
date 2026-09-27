@@ -1153,3 +1153,18 @@ header{
   .ladderProgressTop{margin-bottom:3px;font-size:6.5px}
   .ladderProgressBar{height:4px}
 }
+
+/* Reduce bot-screen copy */
+.rankCard>.sub,
+.ladderExplain{display:none!important}
+.rankCard h2{
+  margin:0 0 8px!important;
+  font-size:18px!important;
+  letter-spacing:.06em!important;
+}
+.ladderStats{
+  margin-bottom:6px!important;
+}
+.ladderProgress{
+  margin-bottom:7px!important;
+}
