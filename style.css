@@ -17,3 +17,9 @@ header{margin-bottom:7px}h1{font-size:24px}.sub{font-size:8px;margin-top:3px}.gh
 .row{gap:3px;margin:3px 0}.key{height:32px;min-width:0;border-radius:5px;font-size:11px}.key.action{min-width:56px;height:30px;padding:0 9px}.key.playKey{min-width:76px}.legend{gap:6px;font-size:7px;margin-top:3px}.legend b{width:7px;height:7px}
 }
 @media(max-width:380px){.help,.legend{display:none}.key{height:29px}.wordDisplay{min-height:33px}.playedWord.current{font-size:30px}}
+
+html,body,.app,.turnPanel,.wordEntry,.wordDisplay,.inlineDelete,.keyboard,.key{
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.inlineDelete,.key,.ghost{user-select:none;-webkit-user-select:none}
