@@ -1295,3 +1295,14 @@ header .brandBlock>.sub{display:none!important}
   transform:none;
   transition:opacity .16s ease,transform .16s ease;
 }
+
+/* Tutorial copy alignment */
+.tutorialStage{
+  align-items:flex-end!important;
+  text-align:right!important;
+}
+.tutorialLine{
+  width:auto!important;
+  max-width:92%;
+  text-align:right!important;
+}
