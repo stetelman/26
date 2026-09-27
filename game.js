@@ -15,8 +15,8 @@ Promise.all([
 
 function reset(){players=[{got:new Set()},{got:new Set()}];turn=0;moveHistory=[];gameOver=false;typedWord='';render()}
 function current(){return players[turn%2]}
-function lockedLetters(){const s=new Set();for(const m of moveHistory.slice(-2))for(const ch of new Set(m.word))s.add(ch);return s}
-function gainedBy(word,p=current()){const lock=lockedLetters();return [...new Set(word)].filter(ch=>!p.got.has(ch)&&!lock.has(ch))}
+function lockedLetters(playerIndex=turn%2){const s=new Set();const mine=moveHistory.filter(m=>m.player===playerIndex).slice(-2);for(const m of mine)for(const ch of new Set(m.word))s.add(ch);return s}
+function gainedBy(word,p=current(),playerIndex=turn%2){const lock=lockedLetters(playerIndex);return [...new Set(word)].filter(ch=>!p.got.has(ch)&&!lock.has(ch))}
 function legalWord(word){
  if(word.length<3||word.length>7)return {ok:false,msg:'Use a 3–7 letter word.'};
  if(!dict.has(word))return {ok:false,msg:'That word is not in the dictionary.'};
@@ -29,7 +29,7 @@ function play(){
  commit(word,'human');
 }
 function commit(word,source){
- const actor=turn%2;const gained=gainedBy(word,current());
+ const actor=turn%2;const gained=gainedBy(word,current(),actor);
  for(const ch of gained)current().got.add(ch);
  moveHistory.push({player:actor,word,gained,source});
  typedWord='';
@@ -39,10 +39,10 @@ function commit(word,source){
 }
 function botMove(){
  if(gameOver||mode!=='bot'||turn%2!==1)return;
- const lock=lockedLetters();let best=null,bestScore=-1e9;
+ const lock=lockedLetters(1);let best=null,bestScore=-1e9;
  const pool=commonWords.slice(0,2400);
  for(const w of pool){
-   const gain=gainedBy(w,current());let rare=0;for(const ch of gain)rare+=({Q:3,Z:2.6,X:2.3,J:2.2,K:1.4,V:1.3}[ch]||1);
+   const gain=gainedBy(w,current(),1);let rare=0;for(const ch of gain)rare+=({Q:3,Z:2.6,X:2.3,J:2.2,K:1.4,V:1.3}[ch]||1);
    const score=gain.length*6+rare+w.length*.15;
    if(score>bestScore){bestScore=score;best=w}
  }
@@ -50,8 +50,7 @@ function botMove(){
  commit(best,'bot');
 }
 function winChance(){
- const lock=lockedLetters();
- const scores=players.map((p,i)=>p.got.size-[...lock].filter(l=>!p.got.has(l)).length*.22+(i===turn%2?.25:0));
+ const scores=players.map((p,i)=>{const lock=lockedLetters(i);return p.got.size-[...lock].filter(l=>!p.got.has(l)).length*.22+(i===turn%2?.25:0)});
  const p1=1/(1+Math.exp(-(scores[0]-scores[1])/3.4));const a=Math.round(p1*100);return[a,100-a]
 }
 function render(){renderUI();renderWords()}
@@ -61,7 +60,7 @@ function renderWords(){
  el.innerHTML=recent.map((m,i)=>`<div class="playedWord ${i===0?'current':i===1?'prev1':i===2?'prev2':'older'}"><span class="who">P${m.player+1}</span>${m.word}</div>`).join('');
 }
 function renderUI(){
- const me=current(),lock=lockedLetters(),ch=winChance();
+ const me=current(),lock=lockedLetters(turn%2),ch=winChance();
  $('p1count').textContent=players[0].got.size+'/26';$('p2count').textContent=players[1].got.size+'/26';
  $('p1bar').style.width=(players[0].got.size/26*100)+'%';$('p2bar').style.width=(players[1].got.size/26*100)+'%';
  $('p1chance').textContent=ch[0]+'%';$('p2chance').textContent=ch[1]+'%';
@@ -85,7 +84,7 @@ function renderUI(){
  actions.append(back,enter);kb.appendChild(actions)
 }
 function del(){if(gameOver||(mode==='bot'&&turn%2===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
-function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Use a 3–7 letter word. Locked letters may be used, but they do not score.'},2200)}
+function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Use a 3–7 letter word. Letters from your last two words are locked for you.'},2200)}
 function showWinner(i){const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
 $('newGame').onclick=reset;
 $('inlineDelete').onclick=del;
