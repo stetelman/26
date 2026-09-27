@@ -1341,3 +1341,50 @@ header .brandBlock>.sub{display:none!important}
   text-align:left!important;
   text-align-last:auto!important;
 }
+
+/* Desktop: full-width play surface and keyboard above the fold */
+@media(min-width:601px){
+  html,body{
+    height:100%;
+    overflow:hidden;
+  }
+  body{min-height:100dvh}
+  .app{
+    width:100%;
+    height:100dvh;
+    max-height:100dvh;
+    max-width:900px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  header,
+  .meter,
+  .keyboardSection{
+    flex:0 0 auto;
+  }
+  header{margin-bottom:10px}
+  .wordStage{
+    flex:1 1 auto;
+    width:100%;
+    max-width:none;
+    min-height:240px;
+    height:auto;
+    aspect-ratio:auto;
+    margin:10px 0 8px;
+  }
+  .keyboardSection{
+    width:100%;
+    padding-bottom:4px;
+  }
+  .keyboard{
+    max-width:100%;
+  }
+  .row{
+    margin:5px 0;
+  }
+  .key{
+    height:44px;
+    max-width:78px;
+  }
+}
