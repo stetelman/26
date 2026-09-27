@@ -317,3 +317,67 @@ header h1{color:#25231f}
   .rankOption .botBadge{width:21px;height:21px;min-width:21px}
   .rankHint{margin-top:4px}
 }
+
+/* Mobile header + multiplayer viewport fit */
+@media(max-width:600px){
+  header{align-items:flex-start;gap:7px}
+  header>div:first-child{flex:0 0 auto;min-width:128px}
+  header h1{font-size:23px;line-height:.95;white-space:nowrap}
+  header>div:first-child>.sub{
+    font-size:7px;
+    letter-spacing:.085em;
+    white-space:nowrap;
+    line-height:1.1;
+    margin-top:4px;
+  }
+  .headerBtns{flex:1;min-width:0;justify-content:flex-end;align-items:flex-start;gap:4px}
+  .headerBtns .ghost{white-space:nowrap}
+
+  .keyboardSection{
+    flex:0 0 auto;
+    width:100%;
+    padding-bottom:max(2px,env(safe-area-inset-bottom));
+  }
+
+  /* 3–4 player status must not consume a second tall row */
+  .meter.multi{
+    display:flex;
+    gap:4px;
+    padding:5px;
+    align-items:stretch;
+  }
+  .meter.multi .multiPlayerCard{
+    flex:1 1 0;
+    min-width:0;
+    padding:5px 4px;
+  }
+  .meter.multi .multiPlayerCard .label{
+    font-size:7px;
+    letter-spacing:.025em;
+    white-space:nowrap;
+  }
+  .meter.multi .multiPlayerCard .label span{
+    display:block;
+    margin:1px 0 0;
+    font-size:7px;
+  }
+  .meter.multi .bar{height:3px;margin-top:3px}
+  .meter.multi .needLine{display:none}
+
+  /* Let the board absorb whatever height remains so the keyboard always stays on-screen. */
+  .wordStage{
+    flex:1 1 auto;
+    width:min(100%,620px);
+    height:auto;
+    min-height:170px;
+    max-height:none;
+    aspect-ratio:auto;
+    margin:5px auto;
+  }
+}
+@media(max-width:390px){
+  header>div:first-child{min-width:116px}
+  header h1{font-size:21px}
+  header>div:first-child>.sub{font-size:6.4px;letter-spacing:.065em}
+  .headerBtns .ghost{padding-left:5px;padding-right:5px}
+}
