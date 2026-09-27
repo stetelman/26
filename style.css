@@ -916,3 +916,84 @@ header{
 .typedTitle:after{
   pointer-events:none;
 }
+
+/* A–Z bot ladder */
+.rankBtn{
+  min-width:0!important;
+  width:auto!important;
+  padding:0 7px!important;
+  gap:3px!important;
+}
+.rankBtn .rankLetter{
+  font-size:9px;
+  font-weight:1000;
+  line-height:1;
+}
+.rankBtn .rankDot{
+  font-size:8px;
+  opacity:.45;
+}
+.rankBtn .rankDescriptor{
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.03em;
+  line-height:1;
+}
+.ladderExplain{
+  margin:2px 0 8px;
+  font-size:8px;
+  line-height:1.25;
+  color:var(--muted);
+  text-align:center;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.rankList{
+  display:grid!important;
+  grid-template-columns:1fr 1fr;
+  gap:4px!important;
+  overflow:visible!important;
+}
+.rankOption{
+  min-height:30px!important;
+  height:30px!important;
+  padding:3px 6px!important;
+  border-radius:6px!important;
+}
+.rankOption .rankNumber{
+  width:20px!important;
+  height:20px!important;
+  min-width:20px!important;
+  font-size:8px!important;
+}
+.rankOption .rankName{
+  font-size:8px!important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.rankOption .rankState{
+  font-size:6px!important;
+}
+.rankHint{display:none!important}
+@media(max-width:600px){
+  .rankBtn .rankLetter{font-size:8px}
+  .rankBtn .rankDescriptor{font-size:6.5px}
+  .rankCard{max-height:calc(100dvh - 20px)!important}
+  .rankList{gap:3px!important}
+  .rankOption{
+    min-height:28px!important;
+    height:28px!important;
+    padding:2px 5px!important;
+  }
+}
+@media(max-height:700px){
+  .ladderExplain{margin-bottom:5px;font-size:7px}
+  .rankOption{
+    min-height:25px!important;
+    height:25px!important;
+  }
+  .rankOption .rankNumber{
+    width:18px!important;height:18px!important;min-width:18px!important
+  }
+}
