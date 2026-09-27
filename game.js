@@ -1,5 +1,5 @@
 const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-let dict=new Set(), allWords=[], commonWords=[], openingWords=[], players=[], turn=0, moveHistory=[], lockUntil=new Map(), gameOver=false, mode='bot', typedWord='', passWait=false;
+let dict=new Set(), allWords=[], commonWords=[], openingWords=[], commonWordSet=new Set(), players=[], turn=0, moveHistory=[], lockUntil=new Map(), gameOver=false, mode='bot', typedWord='', passWait=false;
 const BOT_HISTORY_KEY='typesetBotRecentGames';
 const $=id=>document.getElementById(id);
 
@@ -10,11 +10,11 @@ Promise.all([
  const all=allText.split(/\r?\n/).map(w=>w.trim().toUpperCase()).filter(w=>/^[A-Z]+$/.test(w)&&w.length>=3&&w.length<=7);
  const common=commonText.split(/\r?\n/).map(w=>w.trim().toUpperCase()).filter(w=>/^[A-Z]+$/.test(w)&&w.length>=3&&w.length<=7);
  allWords=[...new Set(all)];dict=new Set(allWords);commonWords=[...new Set(common.filter(w=>dict.has(w)))];
- const commonSet=new Set(commonWords);const extras=allWords.filter(w=>!commonSet.has(w)&&new Set(w).size>=3&&/[AEIOUY]/.test(w));
+ commonWordSet=new Set(commonWords);const extras=allWords.filter(w=>!commonWordSet.has(w)&&new Set(w).size>=3&&/[AEIOUY]/.test(w));
  for(let i=extras.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[extras[i],extras[j]]=[extras[j],extras[i]]}
  openingWords=[...commonWords,...extras].slice(0,10000);reset();msg('Dictionary loaded.');
 }).catch(()=>{
- commonWords=['CAT','DOG','SIX','WORD','GAME','QUIZ','WATER','LETTER','CROSS','ZEBRA','JUMP','VEX','QUICK'];allWords=[...commonWords];openingWords=[...commonWords];dict=new Set(commonWords);reset();msg('Dictionary fallback loaded.');
+ commonWords=['CAT','DOG','SIX','WORD','GAME','QUIZ','WATER','LETTER','CROSS','ZEBRA','JUMP','VEX','QUICK'];allWords=[...commonWords];openingWords=[...commonWords];commonWordSet=new Set(commonWords);dict=new Set(commonWords);reset();msg('Dictionary fallback loaded.');
 });
 
 function reset(){players=[{got:new Set()},{got:new Set()}];turn=0;moveHistory=[];lockUntil=new Map();gameOver=false;typedWord='';passWait=false;document.body.classList.remove('showPass');render()}
@@ -57,13 +57,14 @@ function botMove(){
  if(gameOver||mode!=='bot'||turn%2!==1)return;
  const recent=recentBotWords(),usedThisGame=new Set(moveHistory.map(m=>m.word));
  const candidates=[];
- const pool=(turn===1?openingWords:commonWords).slice(0,turn===1?10000:5000);
+ let pool;
+ if(turn===1){const shuffled=[...openingWords];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}pool=shuffled.slice(0,320)}else pool=commonWords.slice(0,5000);
  for(const w of pool){
    if(recent.has(w)||usedThisGame.has(w))continue;
    const gain=gainedBy(w,current());let rare=0;for(const ch of gain)rare+=({Q:3,Z:2.6,X:2.3,J:2.2,K:1.4,V:1.3}[ch]||1);
    const style=Math.floor(Math.random()*4);
    const lockImpact=[...new Set(w)].filter(ch=>!current().got.has(ch)).length;
-   const commonBoost=commonWords.includes(w)?1.8:0;
+   const commonBoost=commonWordSet.has(w)?1.8:0;
    const score=gain.length*(style===0?7:style===1?5.5:6)+rare*(style===2?1.8:1)+(style===3?lockImpact*1.2:0)+w.length*.15+commonBoost+Math.random()*(turn===1?3.5:.9);
    candidates.push({w,score});
  }
