@@ -136,6 +136,7 @@ function renderHelp(){
 }
 function render(){renderUI();renderWords();renderHelp()}
 function renderWords(){
+ clearTimeout(tutorialStartTimer);
  const el=$('wordStream');
  if(!moveHistory.length){
    el.className='wordStream';
@@ -156,7 +157,6 @@ function renderWords(){
        return '<div class="tutorialLine">'+chars+'</div>';
      }).join('');
      el.innerHTML='<div class="emptyStage tutorialStage">'+typed+'<div class="tutorialStart">START</div></div>';
-     clearTimeout(tutorialStartTimer);
      tutorialStartTimer=setTimeout(()=>{
        const start=el.querySelector('.tutorialStart');
        if(start)start.classList.add('show');
