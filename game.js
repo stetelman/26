@@ -76,7 +76,7 @@ function renderUI(){
    for(const l of row){
      const d=document.createElement('div'),need=!me.got.has(l),locked=lock.has(l);
      d.className='key '+(need?(locked?'lockedNeed':'need'):(locked?'locked':'earned'))+(blocked?' disabled':'');
-     d.textContent=l;if(!blocked&&!locked)d.onclick=()=>{if(typedWord.length<7){typedWord+=l;renderUI()}};
+     d.textContent=l;if(!blocked)d.onclick=()=>{if(typedWord.length<7){typedWord+=l;renderUI()}};
      r.appendChild(d)
    }kb.appendChild(r)
  }
@@ -86,9 +86,9 @@ function renderUI(){
  actions.append(back,enter);kb.appendChild(actions)
 }
 function del(){if(gameOver||(mode==='bot'&&turn%2===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
-function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Use a 3–7 letter word. Letters from the last two plays are locked.'},2200)}
+function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Use a 3–7 letter word. Locked letters may be used, but they do not score.'},2200)}
 function showWinner(i){const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
 $('newGame').onclick=reset;
 $('inlineDelete').onclick=del;
 $('modeBtn').onclick=()=>{mode=mode==='bot'?'local':'bot';$('modeBtn').textContent=mode==='bot'?'VS BOT':'2 PLAYER';reset()};
-document.addEventListener('keydown',e=>{if(gameOver||(mode==='bot'&&turn%2===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7&&!lockedLetters().has(e.key.toUpperCase())){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter')play()});
+document.addEventListener('keydown',e=>{if(gameOver||(mode==='bot'&&turn%2===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter')play()});
