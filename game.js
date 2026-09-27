@@ -1,189 +1,96 @@
 const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-const CELL=34, ORIGIN=450;
-let dict=new Set(), dictWords=[], board=new Map(), players=[], turn=0, moveHistory=[], placements=[], altIndex=0, gameOver=false, mode='bot', typedWord='', strategyStats={humanMoves:0,nonGreedy:0,totalGain:0,bestGain:0};
+let dict=new Set(), commonWords=[], players=[], turn=0, moveHistory=[], gameOver=false, mode='bot', typedWord='';
 const $=id=>document.getElementById(id);
-const key=(x,y)=>`${x},${y}`;
-const get=(x,y)=>board.get(key(x,y));
 
 Promise.all([
-  fetch('https://raw.githubusercontent.com/dolph/dictionary/master/enable1.txt').then(r=>{if(!r.ok)throw new Error('ENABLE1 failed');return r.text()}),
-  fetch('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt').then(r=>{if(!r.ok)throw new Error('common list failed');return r.text()})
+ fetch('https://raw.githubusercontent.com/dolph/dictionary/master/enable1.txt').then(r=>r.ok?r.text():Promise.reject()),
+ fetch('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt').then(r=>r.ok?r.text():Promise.reject())
 ]).then(([allText,commonText])=>{
-  const allWords=allText.split(/\r?\n/).map(w=>w.trim()).filter(w=>/^[a-z]+$/i.test(w)&&w.length>=3&&w.length<=16).map(w=>w.toUpperCase());
-  const commonWords=commonText.split(/\r?\n/).map(w=>w.trim()).filter(w=>/^[a-z]+$/i.test(w)&&w.length>=3&&w.length<=16).map(w=>w.toUpperCase());
-  dict=new Set(allWords);
-  dictWords=[...new Set(commonWords.concat(allWords.filter(w=>/[JQXZVK]/.test(w)&&w.length<=9)))];
-  reset();
-  msg('ENABLE1 dictionary loaded.');
+ const all=allText.split(/\r?\n/).map(w=>w.trim().toUpperCase()).filter(w=>/^[A-Z]+$/.test(w)&&w.length>=3&&w.length<=7);
+ const common=commonText.split(/\r?\n/).map(w=>w.trim().toUpperCase()).filter(w=>/^[A-Z]+$/.test(w)&&w.length>=3&&w.length<=7);
+ dict=new Set(all);commonWords=[...new Set(common.filter(w=>dict.has(w)))];reset();msg('Dictionary loaded.');
 }).catch(()=>{
-  dictWords=['CAT','CATS','DOG','DOGS','SIX','SIXES','WORD','WORDS','GAME','GAMES','QUIZ','QUARTZ','WATER','LETTER','LETTERS','CROSS','CROSSWORD'];
-  dict=new Set(dictWords);reset();msg('Dictionary fallback loaded.');
+ commonWords=['CAT','DOG','SIX','WORD','GAME','QUIZ','WATER','LETTER','CROSS','ZEBRA','JUMP','VEX','QUICK'];dict=new Set(commonWords);reset();msg('Dictionary fallback loaded.');
 });
 
-function reset(){board=new Map();players=[{got:new Set()},{got:new Set()}];turn=0;moveHistory=[];placements=[];typedWord='';strategyStats={humanMoves:0,nonGreedy:0,totalGain:0,bestGain:0};gameOver=false;render();}
-function lockedLetters(){const s=new Set();for(const m of moveHistory.slice(-2))for(const l of m.newLetters)s.add(l);return s;}
+function reset(){players=[{got:new Set()},{got:new Set()}];turn=0;moveHistory=[];gameOver=false;typedWord='';render()}
 function current(){return players[turn%2]}
-function other(){return players[(turn+1)%2]}
-
-function wordAt(x,y,dx,dy, pending){
-  let sx=x,sy=y;
-  const charAt=(a,b)=>pending.get(key(a,b))||get(a,b);
-  while(charAt(sx-dx,sy-dy)){sx-=dx;sy-=dy}
-  let w='',cells=[],cx=sx,cy=sy;
-  while(charAt(cx,cy)){w+=charAt(cx,cy);cells.push([cx,cy]);cx+=dx;cy+=dy}
-  return {w,cells};
+function lockedLetters(){const s=new Set();for(const m of moveHistory.slice(-2))for(const ch of new Set(m.word))s.add(ch);return s}
+function gainedBy(word,p=current()){return [...new Set(word)].filter(ch=>!p.got.has(ch))}
+function legalWord(word){
+ if(word.length<3||word.length>7)return {ok:false,msg:'Use a 3–7 letter word.'};
+ if(!dict.has(word))return {ok:false,msg:'That word is not in the dictionary.'};
+ const locked=lockedLetters(),hit=[...new Set(word)].filter(ch=>locked.has(ch));
+ if(hit.length)return {ok:false,msg:`Locked: ${hit.join(' ')}`};
+ return {ok:true};
 }
-function placementFor(word,x,y,dx,dy){
-  const locked=lockedLetters(), pending=new Map();let overlaps=0,newCells=[];
-  for(let i=0;i<word.length;i++){
-    const cx=x+dx*i,cy=y+dy*i,old=get(cx,cy),ch=word[i];
-    if(old&&old!==ch)return null;
-    if(old)overlaps++; else {if(locked.has(ch))return null;pending.set(key(cx,cy),ch);newCells.push([cx,cy,ch]);}
-  }
-  if(newCells.length<2||newCells.length>7)return null;
-  if(get(x-dx,y-dy)||get(x+dx*word.length,y+dy*word.length))return null;
-  if(board.size && overlaps===0){
-    let touches=false;
-    for(const [cx,cy] of newCells) if(get(cx+1,cy)||get(cx-1,cy)||get(cx,cy+1)||get(cx,cy-1)){touches=true;break}
-    if(!touches)return null;
-  }
-  const created=[]; const seen=new Set();
-  const main=wordAt(x,y,dx,dy,pending);
-  if(main.w!==word || !dict.has(main.w))return null;
-  created.push(main.w);seen.add(main.w);
-  for(const [cx,cy] of newCells){
-    const cross=wordAt(cx,cy,dy,dx,pending);
-    if(cross.w.length>1){
-      if(cross.w.length<3||!dict.has(cross.w))return null;
-      if(!seen.has(cross.w)){created.push(cross.w);seen.add(cross.w)}
-    }
-  }
-  const gained=new Set();for(const w of created)for(const ch of w)if(!current().got.has(ch))gained.add(ch);
-  const allLetters=new Set(created.join('').split(''));
-  return {word,x,y,dx,dy,newCells,created,gained,allLetters,overlaps};
+function play(){
+ if(gameOver||(mode==='bot'&&turn%2===1))return;
+ const word=typedWord.toUpperCase().replace(/[^A-Z]/g,'');
+ const check=legalWord(word);if(!check.ok){msg(check.msg);return}
+ commit(word,'human');
 }
-function findPlacements(word){
-  if(!dict.has(word))return [];
-  const out=[];
-  if(board.size===0){const p=placementFor(word,0,0,1,0);if(p)out.push(p);return out}
-  const seen=new Set();
-  for(const [k,ch] of board){const [bx,by]=k.split(',').map(Number);for(let i=0;i<word.length;i++)if(word[i]===ch){
-    for(const [dx,dy] of [[1,0],[0,1]]){const x=bx-dx*i,y=by-dy*i,id=`${x},${y},${dx},${dy}`;if(seen.has(id))continue;seen.add(id);const p=placementFor(word,x,y,dx,dy);if(p)out.push(p)}
-  }}
-  for(const [k] of board){const [bx,by]=k.split(',').map(Number);for(const [dx,dy] of [[1,0],[0,1]])for(let i=0;i<word.length;i++){
-    for(const side of [-1,1]){const x=bx-dx*i + dy*side, y=by-dy*i + dx*side, id=`${x},${y},${dx},${dy}`;if(seen.has(id))continue;seen.add(id);const p=placementFor(word,x,y,dx,dy);if(p)out.push(p)}
-  }}
-  return out.sort((a,b)=>b.gained.size-a.gained.size||b.created.length-a.created.length||b.overlaps-a.overlaps||a.x-b.x||a.y-b.y);
-}
-function play(){if(gameOver|| (mode==='bot'&&turn%2===1))return;const word=typedWord.toUpperCase().replace(/[^A-Z]/g,'');if(word.length<3){msg('Words must be at least 3 letters.');return}placements=findPlacements(word);altIndex=0;if(!placements.length){msg(dict.has(word)?'No legal placement for that word.':'Word not in prototype dictionary.');return}commit(placements[0]);}
-function commit(p,source='human'){
-  const actor=turn%2;
-  if(source==='human' && mode==='bot' && actor===0) assessHumanMove(p);
-  for(const [x,y,ch] of p.newCells)board.set(key(x,y),ch);
-  for(const ch of p.allLetters)current().got.add(ch);
-  moveHistory.push({player:actor,word:p.word,newLetters:new Set(p.newCells.map(c=>c[2])),newCells:p.newCells.map(([x,y,ch])=>({x,y,ch})),created:p.created,gained:[...p.gained],source});
-  typedWord='';
-  if(current().got.size===26){gameOver=true;render();showWinner(actor);return}
-  turn++;render();
-  if(mode==='bot' && turn%2===1 && !gameOver){msg('Bot is thinking…');setTimeout(botMove,180)}
-}
-function candidateWordsFor(player){
-  const need=ALPHA.filter(l=>!player.got.has(l));
-  const common=dictWords.slice(0,700);
-  const targeted=[];
-  for(const w of dictWords){
-    if(targeted.length>=650)break;
-    let hits=0;for(const l of need)if(w.includes(l))hits++;
-    if(hits>=2 || need.some(l=>'JQXZVK'.includes(l)&&w.includes(l)))targeted.push(w);
-  }
-  return [...new Set(common.concat(targeted))];
-}
-function moveScore(p,actor){
-  const rare={Q:2.6,Z:2.2,X:2.0,J:2.0,K:1.35,V:1.25};
-  let rareGain=0;for(const l of p.gained)rareGain+=rare[l]||1;
-  const opp=players[1-actor];let freeze=0;for(const [, ,ch] of p.newCells)if(!opp.got.has(ch))freeze++;
-  return p.gained.size*5 + rareGain*1.6 + (p.created.length-1)*2.4 + p.overlaps*.35 + freeze*1.15;
-}
-function bestBotMove(){
-  let best=null,bestScore=-Infinity;
-  for(const w of candidateWordsFor(current())){
-    const ps=findPlacements(w); if(!ps.length)continue;
-    for(const p of ps.slice(0,3)){const s=moveScore(p,1);if(s>bestScore){bestScore=s;best=p}}
-  }
-  return best;
+function commit(word,source){
+ const actor=turn%2;const gained=gainedBy(word,current());
+ for(const ch of new Set(word))current().got.add(ch);
+ moveHistory.push({player:actor,word,gained,source});
+ typedWord='';
+ if(current().got.size===26){gameOver=true;render();showWinner(actor);return}
+ turn++;render();
+ if(mode==='bot'&&turn%2===1&&!gameOver){msg('Bot is thinking…');setTimeout(botMove,160)}
 }
 function botMove(){
-  if(gameOver||mode!=='bot'||turn%2!==1)return;
-  const p=bestBotMove();
-  if(!p){msg('Bot passes — no move found.');turn++;render();return}
-  commit(p,'bot');
-  if(!gameOver){render()}
+ if(gameOver||mode!=='bot'||turn%2!==1)return;
+ const lock=lockedLetters();let best=null,bestScore=-1e9;
+ const pool=commonWords.slice(0,2400);
+ for(const w of pool){
+   if([...new Set(w)].some(ch=>lock.has(ch)))continue;
+   const gain=gainedBy(w,current());let rare=0;for(const ch of gain)rare+=({Q:3,Z:2.6,X:2.3,J:2.2,K:1.4,V:1.3}[ch]||1);
+   const score=gain.length*6+rare+w.length*.15;
+   if(score>bestScore){bestScore=score;best=w}
+ }
+ if(!best){msg('Bot passes.');turn++;render();return}
+ commit(best,'bot');
 }
-function sampledBestCoverage(){
-  let best=0,checked=0;
-  const pool=candidateWordsFor(current());
-  for(let i=0;i<pool.length && checked<420;i++){
-    const ps=findPlacements(pool[i]); if(!ps.length)continue; checked++;
-    if(ps[0].gained.size>best)best=ps[0].gained.size;
-  }
-  return best;
-}
-function assessHumanMove(p){
-  const best=sampledBestCoverage();
-  strategyStats.humanMoves++;
-  strategyStats.totalGain+=p.gained.size;
-  strategyStats.bestGain+=best;
-  if(best>p.gained.size)strategyStats.nonGreedy++;
-}
-function tryAlt(){if(placements.length<2)return;altIndex=(altIndex+1)%placements.length;msg(`Placement ${altIndex+1} of ${placements.length}: ${placements[altIndex].created.join(' + ')}`)}
 function winChance(){
-  const lock=lockedLetters();
-  const score=players.map((p,i)=>{let rem=26-p.got.size, lockedNeed=0;for(const l of lock)if(!p.got.has(l))lockedNeed++;return (26-rem)*1.0-lockedNeed*0.55 + (i===turn%2?.35:0)});
-  const d=score[0]-score[1],p1=1/(1+Math.exp(-d/3.2));return [Math.round(p1*100),100-Math.round(p1*100)];
+ const lock=lockedLetters();
+ const scores=players.map((p,i)=>p.got.size-[...lock].filter(l=>!p.got.has(l)).length*.22+(i===turn%2?.25:0));
+ const p1=1/(1+Math.exp(-(scores[0]-scores[1])/3.4));const a=Math.round(p1*100);return[a,100-a]
 }
-function render(){renderBoard();renderUI();}
-function renderBoard(){
-  const el=$('board');el.innerHTML='';
-  if(!board.size)return;
-  const cells=[...board.entries()].map(([k,ch])=>{const [x,y]=k.split(',').map(Number);return {x,y,ch}});
-  const xs=cells.map(c=>c.x),ys=cells.map(c=>c.y);
-  const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
-  const cols=maxX-minX+1,rows=maxY-minY+1;
-  const wrap=el.parentElement;
-  const pad=18;
-  const availW=Math.max(80,wrap.clientWidth-pad*2),availH=Math.max(80,wrap.clientHeight-pad*2);
-  const size=Math.max(16,Math.min(36,Math.floor(Math.min(availW/(cols*.72),availH/(rows*.86)))));
-  const xStep=size*.72,yStep=size*.86;
-  const boardW=(cols-1)*xStep+size,boardH=(rows-1)*yStep+size;
-  const left=(wrap.clientWidth-boardW)/2,top=(wrap.clientHeight-boardH)/2;
-  const recent=moveHistory.slice(-2);
-  const olderLocked=new Set((recent[0]?.newCells||[]).map(c=>key(c.x,c.y)));
-  const newestLocked=new Set((recent[1]?.newCells||[]).map(c=>key(c.x,c.y)));
-  for(const c of cells){
-    const d=document.createElement('div');d.className='tile';d.textContent=c.ch;
-    const k=key(c.x,c.y);
-    if(newestLocked.has(k))d.classList.add('lockFresh');
-    else if(olderLocked.has(k))d.classList.add('lockAging');
-    d.style.width=size+'px';d.style.height=size+'px';
-    d.style.fontSize=Math.max(12,Math.floor(size*.64))+'px';
-    d.style.left=(left+(c.x-minX)*xStep)+'px';
-    d.style.top=(top+(c.y-minY)*yStep)+'px';
-    el.appendChild(d);
-  }
+function render(){renderUI();renderWords()}
+function renderWords(){
+ const el=$('wordStream');if(!moveHistory.length){el.innerHTML='<div class="emptyStage">PLAY A WORD</div>';return}
+ const recent=moveHistory.slice(-5).reverse();
+ el.innerHTML=recent.map((m,i)=>`<div class="playedWord ${i===0?'current':i===1?'prev1':i===2?'prev2':'older'}"><span class="who">P${m.player+1}</span>${m.word}</div>`).join('');
 }
-function renderUI(){const me=current(),lock=lockedLetters();$('turnName').textContent=`PLAYER ${turn%2+1}`;$('status').textContent=`${lock.size?lock.size+' letters locked':'Opening move'}`;
-  players.forEach((p,i)=>{$(`p${i+1}count`).textContent=`${p.got.size}/26`;$(`p${i+1}bar`).style.width=(p.got.size/26*100)+'%'});const [a,b]=winChance();$('p1chance').textContent=a+'%';$('p2chance').textContent=b+'%';
-  const display=$('wordDisplay');if(display){display.textContent=typedWord||'TYPE A WORD';display.classList.toggle('empty',!typedWord)}
-  const rows=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];const kb=$('keyboard');kb.innerHTML='';const blocked=gameOver||(mode==='bot'&&turn%2===1);for(const row of rows){const r=document.createElement('div');r.className='row';for(const l of row){const d=document.createElement('div');const need=!me.got.has(l),locked=lock.has(l);d.className='key '+(need?(locked?'lockedNeed':'need'):(locked?'locked':'earned'))+(blocked?' disabled':'');d.textContent=l;if(!blocked){d.onclick=()=>{if(typedWord.length<16){typedWord+=l;renderUI()}}}r.appendChild(d)}kb.appendChild(r)}
-  const actions=document.createElement('div');actions.className='row';
-  const back=document.createElement('div');back.className='key action'+(blocked?' disabled':'');back.textContent='⌫';if(!blocked)back.onclick=()=>{typedWord=typedWord.slice(0,-1);renderUI()};
-  const enter=document.createElement('div');enter.className='key action playKey'+(blocked?' disabled':'');enter.textContent='PLAY';if(!blocked)enter.onclick=play;
-  actions.appendChild(back);actions.appendChild(enter);kb.appendChild(actions)
-  const st=$('strategyStats');if(st){const n=strategyStats.humanMoves;st.innerHTML=n?`<strong>${strategyStats.nonGreedy}/${n}</strong> of your moves chose less raw coverage than the sampled maximum · avg gain <strong>${(strategyStats.totalGain/n).toFixed(1)}</strong> vs sampled best <strong>${(strategyStats.bestGain/n).toFixed(1)}</strong>`:'Play a few turns to compare your choices with raw letter coverage.';}
-  $('history').innerHTML=moveHistory.slice(-6).reverse().map(m=>`<div class='move'><strong>P${m.player+1} · ${m.word}</strong> → ${m.created.join(' + ')} ${m.gained.length?`· gained ${m.gained.join('')}`:''}</div>`).join('')||`<div class='move'>No moves yet.</div>`;
-  $('altBtn').classList.toggle('hidden',placements.length<2)
+function renderUI(){
+ const me=current(),lock=lockedLetters(),ch=winChance();
+ $('p1count').textContent=players[0].got.size+'/26';$('p2count').textContent=players[1].got.size+'/26';
+ $('p1bar').style.width=(players[0].got.size/26*100)+'%';$('p2bar').style.width=(players[1].got.size/26*100)+'%';
+ $('p1chance').textContent=ch[0]+'%';$('p2chance').textContent=ch[1]+'%';
+ $('turnName').textContent='PLAYER '+(turn%2+1);
+ const blocked=gameOver||(mode==='bot'&&turn%2===1);
+ $('status').textContent=blocked?'Bot turn':'Your turn';
+ const display=$('wordDisplay');display.textContent=typedWord||'TYPE A WORD';display.classList.toggle('empty',!typedWord);
+ const kb=$('keyboard');kb.innerHTML='';
+ for(const row of ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM']){
+   const r=document.createElement('div');r.className='row';
+   for(const l of row){
+     const d=document.createElement('div'),need=!me.got.has(l),locked=lock.has(l);
+     d.className='key '+(need?(locked?'lockedNeed':'need'):(locked?'locked':'earned'))+(blocked?' disabled':'');
+     d.textContent=l;if(!blocked&&!locked)d.onclick=()=>{if(typedWord.length<7){typedWord+=l;renderUI()}};
+     r.appendChild(d)
+   }kb.appendChild(r)
+ }
+ const actions=document.createElement('div');actions.className='row';
+ const back=document.createElement('div');back.className='key action'+(blocked?' disabled':'');back.textContent='⌫';if(!blocked)back.onclick=del;
+ const enter=document.createElement('div');enter.className='key action playKey'+(blocked?' disabled':'');enter.textContent='PLAY';if(!blocked)enter.onclick=play;
+ actions.append(back,enter);kb.appendChild(actions)
 }
-function msg(t){$('help').textContent=t;setTimeout(()=>{$('help').textContent='Place 2–7 new letters. Existing letters may be reused.'},2600)}
-function showWinner(i){const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class='winnerBox'><div class='sub'>ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
-$('newGame').onclick=reset;$('altBtn').onclick=tryAlt;$('inlineDelete').onclick=()=>{if(gameOver||(mode==='bot'&&turn%2===1))return;typedWord=typedWord.slice(0,-1);renderUI()};$('modeBtn').onclick=()=>{mode=mode==='bot'?'local':'bot';$('modeBtn').textContent=mode==='bot'?'VS BOT':'2 PLAYER';reset()};
-document.addEventListener('keydown',e=>{if(gameOver||(mode==='bot'&&turn%2===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<16){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace'){typedWord=typedWord.slice(0,-1);renderUI()}else if(e.key==='Enter'){play()}});
+function del(){if(gameOver||(mode==='bot'&&turn%2===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
+function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Use a 3–7 letter word. Letters from the last two plays are locked.'},2200)}
+function showWinner(i){const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
+$('newGame').onclick=reset;
+$('inlineDelete').onclick=del;
+$('modeBtn').onclick=()=>{mode=mode==='bot'?'local':'bot';$('modeBtn').textContent=mode==='bot'?'VS BOT':'2 PLAYER';reset()};
+document.addEventListener('keydown',e=>{if(gameOver||(mode==='bot'&&turn%2===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7&&!lockedLetters().has(e.key.toUpperCase())){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter')play()});
