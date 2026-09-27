@@ -147,7 +147,7 @@ function renderWords(){
      el.innerHTML='<div class="emptyStage startStage">START</div>';
    }else{
      const lines=[
-       'PLAY A 3–7 LETTER WORD',
+       'PLAY A THREE TO SEVEN LETTER WORD',
        'COLLECT NEW LETTERS',
        'LAST WORD LOCKS THE NEXT TURN',
        'FIRST TO A–Z WINS'
