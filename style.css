@@ -997,3 +997,120 @@ header{
     width:18px!important;height:18px!important;min-width:18px!important
   }
 }
+
+/* Clean bot ladder */
+.rankCard{
+  width:min(410px,calc(100vw - 20px))!important;
+  padding:18px 16px 14px!important;
+  border-radius:14px!important;
+}
+.rankCard>.sub{
+  margin:0 0 2px!important;
+  font-size:8px!important;
+  letter-spacing:.16em!important;
+}
+.rankCard h2{
+  margin:0!important;
+  padding-right:36px!important;
+  font-size:20px!important;
+  line-height:1!important;
+  letter-spacing:.05em!important;
+}
+.ladderExplain{
+  margin:5px 0 8px!important;
+  text-align:left!important;
+  font-size:8px!important;
+  line-height:1.2!important;
+  letter-spacing:.035em!important;
+  text-transform:none!important;
+}
+.ladderStats{
+  min-height:0!important;
+  margin:0 0 8px!important;
+  padding:6px 0!important;
+  border-top:1px solid var(--line)!important;
+  border-bottom:1px solid var(--line)!important;
+  font-size:8px!important;
+  letter-spacing:.07em!important;
+}
+.ladderStats strong{font-size:11px!important}
+.rankList{
+  grid-template-columns:1fr 1fr!important;
+  gap:4px!important;
+}
+.rankOption{
+  grid-template-columns:22px minmax(0,1fr) 12px!important;
+  height:29px!important;
+  min-height:29px!important;
+  padding:3px 6px!important;
+  gap:6px!important;
+  border-radius:6px!important;
+  box-shadow:none!important;
+  background:#fffdf8!important;
+}
+.rankOption .rankNumber{
+  width:20px!important;
+  height:20px!important;
+  min-width:20px!important;
+  border:1px solid var(--line)!important;
+  border-radius:5px!important;
+  background:#f0ece4!important;
+  font-size:8px!important;
+  font-weight:950!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.rankOption .rankName{
+  font-size:8px!important;
+  font-weight:850!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.rankOption.selected{
+  border-color:var(--accent)!important;
+  background:#f4f6fa!important;
+}
+.rankOption.selected .rankNumber{
+  border-color:var(--accent)!important;
+  background:#e6ebf3!important;
+}
+.rankOption.lockedRank{
+  opacity:.34!important;
+  filter:none!important;
+}
+.rankCheck{
+  color:var(--accent);
+  font-size:9px;
+  font-weight:1000;
+  text-align:center;
+}
+.rankLock{
+  color:var(--muted);
+  font-size:10px;
+  text-align:center;
+}
+.rankState{display:none!important}
+.rankCard .rulesClose{
+  width:28px!important;
+  height:28px!important;
+  top:10px!important;
+  right:10px!important;
+  font-size:20px!important;
+}
+@media(max-width:600px){
+  .rankCard{padding:15px 13px 12px!important}
+  .rankCard h2{font-size:18px!important}
+  .rankOption{height:27px!important;min-height:27px!important}
+}
+@media(max-height:650px){
+  .rankCard{transform:none!important}
+  .rankCard>.sub{display:block!important}
+  .ladderExplain{margin:3px 0 5px!important;font-size:7px!important}
+  .ladderStats{padding:4px 0!important;margin-bottom:5px!important}
+  .rankList{gap:3px!important}
+  .rankOption{height:24px!important;min-height:24px!important;padding:2px 5px!important}
+  .rankOption .rankNumber{width:17px!important;height:17px!important;min-width:17px!important;font-size:7px!important}
+  .rankOption .rankName{font-size:7px!important}
+}
