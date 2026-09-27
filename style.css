@@ -413,3 +413,59 @@ header h1{color:#25231f}
     font-size:6px;
   }
 }
+
+/* Normalize header controls */
+.headerBtns{
+  display:flex;
+  align-items:center;
+}
+.headerBtns .ghost{
+  height:30px;
+  min-height:30px;
+  padding:0 8px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  vertical-align:middle;
+  border-radius:8px;
+}
+.rankBtn{
+  height:30px;
+  min-height:30px;
+  padding:0 8px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  gap:5px;
+  vertical-align:middle;
+}
+.rankBtn .botBadge.tiny{
+  width:16px;
+  height:16px;
+  min-width:16px;
+  margin:0;
+  box-shadow:none;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+@media(max-width:600px){
+  .headerBtns{align-items:center}
+  .headerBtns .ghost,
+  .rankBtn{
+    height:28px;
+    min-height:28px;
+    padding:0 6px;
+    font-size:8px;
+    line-height:1;
+  }
+  .rankBtn .botBadge.tiny{
+    width:14px;
+    height:14px;
+    min-width:14px;
+    font-size:6px;
+  }
+}
