@@ -27,7 +27,8 @@ const BOT_RANKS=BOT_NAMES.map((name,i)=>{
  };
 });
 let botRank=0;
-let tutorialStartTimer=null;
+let tutorialTimer=null;
+let tutorialToken=0;
 const $=id=>document.getElementById(id);
 
 Promise.all([
@@ -136,7 +137,8 @@ function renderHelp(){
 }
 function render(){renderUI();renderWords();renderHelp()}
 function renderWords(){
- clearTimeout(tutorialStartTimer);
+ clearTimeout(tutorialTimer);
+ tutorialToken++;
  const el=$('wordStream');
  if(!moveHistory.length){
    el.className='wordStream';
@@ -150,17 +152,39 @@ function renderWords(){
        'LAST WORD LOCKS THE NEXT TURN',
        'FIRST TO A–Z WINS'
      ];
-     let lineDelay=120;
-     const typed=lines.map(line=>{
-       const chars=[...line].map((ch,j)=>'<span class="tutorialChar" style="animation-delay:'+(lineDelay+j*28)+'ms">'+(ch===' '?'&nbsp;':ch)+'</span>').join('');
-       lineDelay+=line.length*28+220;
-       return '<div class="tutorialLine">'+chars+'</div>';
-     }).join('');
-     el.innerHTML='<div class="emptyStage tutorialStage">'+typed+'<div class="tutorialStart">START</div></div>';
-     tutorialStartTimer=setTimeout(()=>{
-       const start=el.querySelector('.tutorialStart');
-       if(start)start.classList.add('show');
-     },lineDelay+120);
+     const token=++tutorialToken;
+     clearTimeout(tutorialTimer);
+     el.innerHTML='<div class="emptyStage tutorialStage">'+
+       lines.map((_,i)=>'<div class="tutorialLine" data-line="'+i+'"></div>').join('')+
+       '<div class="tutorialStart">START</div></div>';
+
+     let lineIndex=0,charIndex=0;
+     const typeNext=()=>{
+       if(token!==tutorialToken)return;
+       const lineEl=el.querySelector('[data-line="'+lineIndex+'"]');
+       if(!lineEl)return;
+       const line=lines[lineIndex];
+
+       if(charIndex<line.length){
+         lineEl.textContent=line.slice(0,charIndex+1);
+         charIndex++;
+         tutorialTimer=setTimeout(typeNext,34);
+         return;
+       }
+
+       lineIndex++;
+       charIndex=0;
+       if(lineIndex<lines.length){
+         tutorialTimer=setTimeout(typeNext,180);
+       }else{
+         tutorialTimer=setTimeout(()=>{
+           if(token!==tutorialToken)return;
+           const start=el.querySelector('.tutorialStart');
+           if(start)start.classList.add('show');
+         },220);
+       }
+     };
+     tutorialTimer=setTimeout(typeNext,120);
    }
    return;
  }
