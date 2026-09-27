@@ -1329,3 +1329,15 @@ header .brandBlock>.sub{display:none!important}
   text-align:justify!important;
   text-align-last:justify!important;
 }
+
+/* Center tutorial block, left-align copy */
+.tutorialStage{
+  align-items:center!important;
+  text-align:left!important;
+}
+.tutorialLine{
+  width:min(92%,340px)!important;
+  max-width:340px!important;
+  text-align:left!important;
+  text-align-last:auto!important;
+}
