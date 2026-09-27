@@ -71,8 +71,17 @@ function winChance(){
 function render(){renderUI();renderWords()}
 function renderWords(){
  const el=$('wordStream');if(!moveHistory.length){el.innerHTML='<div class="emptyStage">PLAY A WORD</div>';return}
- const recent=moveHistory.slice(-5).reverse();
- el.innerHTML=recent.map((m,i)=>`<div class="playedWord ${i===0?'current':i===1?'prev1':i===2?'prev2':'older'}"><span class="who">P${m.player+1}</span>${m.word}</div>`).join('');
+ const lock=lockedLetters(),recent=moveHistory.slice(-8);
+ const lanes=[0,1].map(player=>{
+   const words=recent.filter(m=>m.player===player);
+   return `<div class="wordLane p${player+1}Lane"><div class="laneLabel">PLAYER ${player+1}</div><div class="laneWords">${words.map((m,i)=>{
+     const age=words.length-1-i;
+     const cls=age===0?'current':age===1?'prev1':age===2?'prev2':'older';
+     const letters=[...m.word].map(ch=>`<span class="${lock.has(ch)?'lockedChar':''}">${ch}</span>`).join('');
+     return `<div class="playedWord ${cls}">${letters}</div>`;
+   }).join('')||'<div class="laneEmpty">—</div>'}</div></div>`;
+ }).join('<div class="laneDivider"></div>');
+ el.innerHTML=lanes;
 }
 function renderUI(){
  const me=current(),lock=lockedLetters(),ch=winChance();
