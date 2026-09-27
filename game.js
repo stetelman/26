@@ -152,16 +152,16 @@ function renderBoard(){
   const wrap=el.parentElement;
   const pad=18;
   const availW=Math.max(80,wrap.clientWidth-pad*2),availH=Math.max(80,wrap.clientHeight-pad*2);
-  const size=Math.max(16,Math.min(34,Math.floor(Math.min(availW/cols,availH/rows))));
-  const gap=Math.max(1,Math.round(size*.06));
-  const boardW=cols*size,boardH=rows*size;
+  const size=Math.max(16,Math.min(36,Math.floor(Math.min(availW/(cols*.72),availH/(rows*.86)))));
+  const xStep=size*.72,yStep=size*.86;
+  const boardW=(cols-1)*xStep+size,boardH=(rows-1)*yStep+size;
   const left=(wrap.clientWidth-boardW)/2,top=(wrap.clientHeight-boardH)/2;
   for(const c of cells){
     const d=document.createElement('div');d.className='tile';d.textContent=c.ch;
-    d.style.width=(size-gap)+'px';d.style.height=(size-gap)+'px';
-    d.style.fontSize=Math.max(10,Math.floor(size*.55))+'px';
-    d.style.left=(left+(c.x-minX)*size)+'px';
-    d.style.top=(top+(c.y-minY)*size)+'px';
+    d.style.width=size+'px';d.style.height=size+'px';
+    d.style.fontSize=Math.max(12,Math.floor(size*.64))+'px';
+    d.style.left=(left+(c.x-minX)*xStep)+'px';
+    d.style.top=(top+(c.y-minY)*yStep)+'px';
     el.appendChild(d);
   }
 }
