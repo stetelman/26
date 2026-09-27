@@ -2,6 +2,8 @@ const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 let dict=new Set(), allWords=[], commonWords=[], openingWords=[], commonWordSet=new Set(), players=[], playerCount=2, turn=0, moveHistory=[], lockUntil=new Map(), gameOver=false, mode='bot', typedWord='', passWait=false;
 const BOT_HISTORY_KEY='typesetBotRecentGames';
 const BOT_UNLOCK_KEY='typesetUnlockedBotRank';
+const BOT_STREAK_KEY='typesetBotStreak';
+const BOT_BEST_STREAK_KEY='typesetBotBestStreak';
 const BOT_RANKS=[
  {name:'Dabbler',icon:'⌨',sample:140,shortlist:28,pick:18,noise:4.2,defense:.25},
  {name:'Typist',icon:'T',sample:220,shortlist:24,pick:14,noise:3.2,defense:.45},
@@ -30,6 +32,8 @@ Promise.all([
 });
 
 function unlockedBotRank(){const n=parseInt(localStorage.getItem(BOT_UNLOCK_KEY)||'0',10);return Math.max(0,Math.min(BOT_RANKS.length-1,isNaN(n)?0:n))}
+function botStreak(){return Math.max(0,parseInt(localStorage.getItem(BOT_STREAK_KEY)||'0',10)||0)}
+function botBestStreak(){return Math.max(0,parseInt(localStorage.getItem(BOT_BEST_STREAK_KEY)||'0',10)||0)}
 function reset(){const n=mode==='bot'?2:playerCount;players=Array.from({length:n},()=>({got:new Set()}));turn=0;moveHistory=[];lockUntil=new Map();gameOver=false;typedWord='';passWait=false;document.body.classList.remove('showPass');render()}
 function current(){return players[turn%players.length]}
 function activePlayer(){return turn%players.length}
@@ -163,6 +167,11 @@ function tone(freq=520,duration=.05,volume=.035){
 function showWinner(i){
  const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);
  let unlockedNext=null;
+ let streakNow=botStreak(),bestNow=botBestStreak();
+ if(mode==='bot'){
+   if(i===0){streakNow++;localStorage.setItem(BOT_STREAK_KEY,String(streakNow));if(streakNow>bestNow){bestNow=streakNow;localStorage.setItem(BOT_BEST_STREAK_KEY,String(bestNow))}}
+   else{streakNow=0;localStorage.setItem(BOT_STREAK_KEY,'0')}
+ }
  if(mode==='bot'&&i===0){
    const unlocked=unlockedBotRank();
    if(botRank===unlocked&&unlocked<BOT_RANKS.length-1){
@@ -192,11 +201,12 @@ function showWinner(i){
    {icon:'↵',label:'CLUTCH WORD',value:finisher?finisher.word:'—'}
  ];
  const rankLine=mode==='bot'?BOT_RANKS[botRank].name.toUpperCase():'PASS & PLAY';
- const botBadge=mode==='bot'?`<span class="botBadge">${BOT_RANKS[botRank].icon}</span>`:'';
- const unlockText=unlockedNext!==null?`<div class="unlockText"><span>UNLOCKED</span><strong><span class="botBadge small">${BOT_RANKS[unlockedNext].icon}</span>${BOT_RANKS[unlockedNext].name.toUpperCase()}</strong></div>`:'';
+ const botBadge=mode==='bot'?`<span class="botBadge badge-${botRank}">${BOT_RANKS[botRank].icon}</span>`:'';
+ const unlockText=unlockedNext!==null?`<div class="unlockText"><span>UNLOCKED</span><strong><span class="botBadge badge-${unlockedNext} small">${BOT_RANKS[unlockedNext].icon}</span>${BOT_RANKS[unlockedNext].name.toUpperCase()}</strong></div>`:'';
+ const streakText=mode==='bot'?`<div class="streakStrip"><span>🔥 ${streakNow} WIN STREAK</span><span>BEST ${bestNow}</span></div>`:'';
  haptic([40,35,70]);tone(620,.08,.04);setTimeout(()=>tone(820,.1,.04),85);
  const d=document.createElement('div');d.className='winner';
- d.innerHTML=`<div class="winnerBox statsWinner"><div class="sub">${botBadge}${rankLine}</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2>${unlockText}<div class="awardList">${awards.map(a=>`<div class="awardCard"><span class="awardIcon">${a.icon}</span><div><span class="awardLabel">${a.label}</span><strong>${a.value}</strong></div></div>`).join('')}</div><div class="winnerActions"><button class="secondaryBtn" data-action="rematch">REMATCH</button>${unlockedNext!==null?`<button class="nextRankBtn" data-action="next">NEXT RANK</button>`:''}</div></div>`;
+ d.innerHTML=`<div class="winnerBox statsWinner"><div class="sub">${botBadge}${rankLine}</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2>${unlockText}${streakText}<div class="awardList">${awards.map(a=>`<div class="awardCard"><span class="awardIcon">${a.icon}</span><div><span class="awardLabel">${a.label}</span><strong>${a.value}</strong></div></div>`).join('')}</div><div class="winnerActions"><button class="secondaryBtn" data-action="rematch">REMATCH</button>${unlockedNext!==null?`<button class="nextRankBtn" data-action="next">NEXT RANK</button>`:''}</div></div>`;
  d.querySelector('[data-action="rematch"]').onclick=()=>{d.remove();renderRanks();reset()};
  const next=d.querySelector('[data-action="next"]');if(next)next.onclick=()=>{botRank=unlockedNext;d.remove();renderRanks();reset()};
  document.body.appendChild(d)
@@ -228,10 +238,10 @@ $('passReady').onclick=()=>{passWait=false;document.body.classList.remove('showP
 function renderRanks(){
  const unlocked=unlockedBotRank();
  if(botRank>unlocked)botRank=unlocked;
- $('rankBtn').innerHTML='<span class="botBadge tiny">'+BOT_RANKS[botRank].icon+'</span>'+BOT_RANKS[botRank].name.toUpperCase();
- $('rankList').innerHTML=BOT_RANKS.map((r,i)=>{
+ $('rankBtn').innerHTML='<span class="botBadge badge-'+botRank+' tiny">'+BOT_RANKS[botRank].icon+'</span>'+BOT_RANKS[botRank].name.toUpperCase();
+ $('rankList').innerHTML=`<div class="ladderStats"><span>🔥 STREAK <strong>${botStreak()}</strong></span><span>BEST <strong>${botBestStreak()}</strong></span></div>`+BOT_RANKS.map((r,i)=>{
    const locked=i>unlocked;
-   return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''}><span class="rankNumber">${r.icon}</span><span class="rankName">${r.name}</span><span class="rankState">${locked?'LOCKED':i===botRank?'SELECTED':'PLAY'}</span></button>`;
+   return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''}><span class="rankNumber botBadge badge-${i}">${r.icon}</span><span class="rankName">${r.name}</span><span class="rankState">${locked?'LOCKED':i===botRank?'SELECTED':'PLAY'}</span></button>`;
  }).join('');
  [...document.querySelectorAll('.rankOption:not([disabled])')].forEach(b=>b.onclick=()=>{botRank=+b.dataset.rank;document.body.classList.remove('showRanks');renderRanks();reset()});
 }
