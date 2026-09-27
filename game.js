@@ -232,7 +232,7 @@ function showWinner(i){
  const next=d.querySelector('[data-action="next"]');if(next)next.onclick=()=>{botRank=unlockedNext;d.remove();renderRanks();reset()};
  document.body.appendChild(d)
 }
-$('newGame').onclick=reset;
+$('newGame').onclick=()=>{refreshModeLocks();document.body.classList.add('showMode')};
 $('inlineDelete').onclick=()=>{haptic(7);del()};
 $('inlinePlay').onclick=()=>{haptic(14);tone(460,.035,.02);play()};
 function refreshModeLocks(){
@@ -249,13 +249,11 @@ function refreshModeLocks(){
    four.querySelector('span').textContent=open4?'Pass & play':'Unlock at Proofreader';
  }
 }
-$('modeBtn').onclick=()=>{refreshModeLocks();document.body.classList.add('showMode')};
 $('closeMode').onclick=()=>document.body.classList.remove('showMode');
 $('modeModal').onclick=e=>{if(e.target.id==='modeModal')document.body.classList.remove('showMode')};
 [...document.querySelectorAll('.modeChoice')].forEach(b=>b.onclick=()=>{
  const v=b.dataset.mode;
  if(v==='bot'){mode='bot';playerCount=2}else{mode='local';playerCount=+v}
- $('modeBtn').textContent='TAB';
  $('rankBtn').style.display=mode==='bot'?'inline-flex':'none';
  document.body.classList.remove('showMode');
  reset();
