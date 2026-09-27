@@ -1312,3 +1312,5 @@ header .brandBlock>.sub{display:none!important}
 
 /* No START prompt; tutorial hands off to entry box */
 .startStage{display:none!important}
+
+.startStage,.tutorialStart{display:none!important}
