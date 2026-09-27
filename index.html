@@ -1,6 +1,6 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>TYPESET</title><link rel="stylesheet" href="style.css"></head>
+<title>TYPESET</title><link rel="stylesheet" href="style.css?v=20260927d"></head>
 <body>
 <div class="app">
 <header>
@@ -16,7 +16,7 @@
     <div class="turnLine"><span id="turnName">PLAYER 1</span><span id="status">Type a word</span></div>
     <div class="directTypeRow">
       <div class="entryTextBlock">
-        <div id="wordDisplay" class="directWord empty">TYPE A WORD<span class="cursor">|</span></div>
+        <div id="wordDisplay" class="directWord empty"><span class="cursor">|</span></div>
         <div class="help" id="help">Use a 3–7 letter word. Letters in the previous word are unavailable this turn.</div>
       </div>
       <button id="inlineDelete" class="inlineDelete" aria-label="Delete last letter">⌫</button>
@@ -34,5 +34,5 @@
 <div id="rankModal" class="rankModal"><div class="rankCard"><button id="closeRanks" class="rulesClose">×</button><h2>A → Z</h2><div id="ladderStats" class="ladderStats"></div><div id="ladderProgress" class="ladderProgress"></div><div id="rankList" class="rankList"></div></div></div>
 <div id="passModal" class="passModal"><div class="passCard"><div class="sub">PASS & PLAY</div><h2>Pass to <span id="passPlayer">PLAYER 2</span></h2><p>Hand over the phone, then tap ready.</p><button id="passReady">READY</button></div></div>
 <div id="rulesModal" class="rulesModal"><div class="rulesCard rulesKeyboard"><button id="closeRules" class="rulesClose">×</button><div class="sub">HOW TO PLAY</div><h2>TYPESET</h2><div class="rulesKeys"><span>A</span><span>B</span><span>C</span><span>…</span><span>Z</span></div><div class="ruleGrid"><div class="ruleItem"><div class="ruleKey">1</div><div><strong>OPENING WORD</strong><p>The first word is a setup move: it scores 0 letters and hard-locks its letters for the next player.</p></div></div><div class="ruleItem"><div class="ruleKey">3–7</div><div><strong>PLAY A WORD</strong><p>After the opening move, play any valid 3–7 letter word.</p></div></div><div class="ruleItem"><div class="ruleKey earnedRule">A</div><div><strong>COLLECT LETTERS</strong><p>Every new letter in your word fills that key for you.</p></div></div><div class="ruleItem"><div class="ruleKey lockedRule">1</div><div><strong>LOCK THE NEXT TURN</strong><p>Letters in the previous word are unavailable for your next turn.</p></div></div><div class="ruleItem"><div class="ruleKey repeatRule">↺</div><div><strong>NO REPEATS</strong><p>A word may only be played once per game.</p></div></div></div><div class="winRule"><span class="playChip">A–Z</span><div><strong>FIRST TO COMPLETE THE ALPHABET WINS</strong><p>PASS & PLAY supports 2–4 players on one phone.</p></div></div></div></div>
-<script src="game.js"></script>
+<script src="game.js?v=20260927d"></script>
 </body></html>
