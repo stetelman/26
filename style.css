@@ -875,3 +875,17 @@ header h1{color:#25231f}
     line-height:1.15;
   }
 }
+
+/* Simplified header: help, rank, new */
+#modeBtn{display:none!important}
+.headerBtns{gap:4px}
+#newGame{
+  width:42px;
+  min-width:42px!important;
+}
+@media(max-width:600px){
+  #newGame{
+    width:29px;
+    min-width:29px!important;
+  }
+}
