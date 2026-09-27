@@ -134,10 +134,6 @@ function renderUI(){
      r.appendChild(d)
    }kb.appendChild(r)
  }
- const actions=document.createElement('div');actions.className='row';
- const back=document.createElement('div');back.className='key action'+(blocked?' disabled':'');back.textContent='⌫';if(!blocked)back.onclick=del;
- const enter=document.createElement('div');enter.className='key action playKey'+(blocked?' disabled':'');enter.textContent='PLAY';if(!blocked)enter.onclick=play;
- actions.append(back,enter);kb.appendChild(actions)
 }
 function del(){if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
 function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Only the previous word is locked. Locked letters may be used but do not score.'},2200)}
