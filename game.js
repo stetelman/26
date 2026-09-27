@@ -3,14 +3,14 @@ let dict=new Set(), allWords=[], commonWords=[], openingWords=[], commonWordSet=
 const BOT_HISTORY_KEY='typesetBotRecentGames';
 const BOT_UNLOCK_KEY='typesetUnlockedBotRank';
 const BOT_RANKS=[
- {name:'Dabbler',sample:140,shortlist:28,pick:18,noise:4.2,defense:.25},
- {name:'Typist',sample:220,shortlist:24,pick:14,noise:3.2,defense:.45},
- {name:'Copy Clerk',sample:320,shortlist:20,pick:11,noise:2.4,defense:.7},
- {name:'Stenographer',sample:440,shortlist:16,pick:8,noise:1.7,defense:.95},
- {name:'Typesetter',sample:600,shortlist:12,pick:6,noise:1.2,defense:1.2},
- {name:'Proofreader',sample:760,shortlist:10,pick:4,noise:.8,defense:1.4},
- {name:'Court Reporter',sample:950,shortlist:8,pick:3,noise:.5,defense:1.6},
- {name:'Wordsmith',sample:1200,shortlist:6,pick:2,noise:.25,defense:1.8}
+ {name:'Dabbler',icon:'⌨',sample:140,shortlist:28,pick:18,noise:4.2,defense:.25},
+ {name:'Typist',icon:'T',sample:220,shortlist:24,pick:14,noise:3.2,defense:.45},
+ {name:'Copy Clerk',icon:'C',sample:320,shortlist:20,pick:11,noise:2.4,defense:.7},
+ {name:'Stenographer',icon:'S',sample:440,shortlist:16,pick:8,noise:1.7,defense:.95},
+ {name:'Typesetter',icon:'TS',sample:600,shortlist:12,pick:6,noise:1.2,defense:1.2},
+ {name:'Proofreader',icon:'✓',sample:760,shortlist:10,pick:4,noise:.8,defense:1.4},
+ {name:'Court Reporter',icon:'CR',sample:950,shortlist:8,pick:3,noise:.5,defense:1.6},
+ {name:'Wordsmith',icon:'W',sample:1200,shortlist:6,pick:2,noise:.25,defense:1.8}
 ];
 let botRank=0;
 const $=id=>document.getElementById(id);
@@ -173,13 +173,30 @@ function showWinner(i){
  const winnerName=mode==='bot'?(i===0?'YOU':BOT_RANKS[botRank].name.toUpperCase()):'PLAYER '+(i+1);
  const winnerMoves=moveHistory.filter(m=>m.player===i);
  const biggest=winnerMoves.reduce((best,m)=>m.gained.length>(best?.gained?.length||-1)?m:best,null);
- const uniqueWords=new Set(moveHistory.map(m=>m.word)).size;
- const missing=ALPHA.filter(ch=>!players[i].got.has(ch));
+ const finisher=winnerMoves[winnerMoves.length-1]||null;
+ let bestBlock=null,bestBlockCount=-1;
+ for(let k=0;k<moveHistory.length;k++){
+   const m=moveHistory[k];if(m.player!==i)continue;
+   const oppIndex=players.length===2?1-i:null;if(oppIndex===null)continue;
+   const oppBefore=new Set();
+   for(const ch of ALPHA)oppBefore.add(ch);
+   for(let q=0;q<k;q++)if(moveHistory[q].player===oppIndex)for(const ch of moveHistory[q].gained)oppBefore.delete(ch);
+   const count=[...new Set(m.word)].filter(ch=>oppBefore.has(ch)).length;
+   if(count>bestBlockCount){bestBlockCount=count;bestBlock=m}
+ }
+ const rareOrder=['Q','X','J','Z','V','K'];
+ const rareHits=rareOrder.filter(ch=>players[i].got.has(ch));
+ const awards=[
+   {icon:'＋',label:'BIGGEST HAUL',value:biggest?`${biggest.word} (+${biggest.gained.length})`:'—'},
+   players.length===2&&bestBlock?{icon:'▣',label:'BEST BLOCK',value:`${bestBlock.word} (${bestBlockCount} needed letters)`}:{icon:'★',label:'RARE HIT',value:rareHits.length?rareHits.join(' · '):'NONE'},
+   {icon:'↵',label:'CLUTCH WORD',value:finisher?finisher.word:'—'}
+ ];
  const rankLine=mode==='bot'?BOT_RANKS[botRank].name.toUpperCase():'PASS & PLAY';
- const unlockText=unlockedNext!==null?`<div class="unlockText"><span>UNLOCKED</span><strong>${BOT_RANKS[unlockedNext].name.toUpperCase()}</strong></div>`:'';
+ const botBadge=mode==='bot'?`<span class="botBadge">${BOT_RANKS[botRank].icon}</span>`:'';
+ const unlockText=unlockedNext!==null?`<div class="unlockText"><span>UNLOCKED</span><strong><span class="botBadge small">${BOT_RANKS[unlockedNext].icon}</span>${BOT_RANKS[unlockedNext].name.toUpperCase()}</strong></div>`:'';
  haptic([40,35,70]);tone(620,.08,.04);setTimeout(()=>tone(820,.1,.04),85);
  const d=document.createElement('div');d.className='winner';
- d.innerHTML=`<div class="winnerBox statsWinner"><div class="sub">${rankLine}</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2>${unlockText}<div class="statsGrid"><div><span>TURNS</span><strong>${moveHistory.length}</strong></div><div><span>WORDS</span><strong>${uniqueWords}</strong></div><div><span>BEST GAIN</span><strong>${biggest?biggest.gained.length:0}</strong></div><div><span>BEST WORD</span><strong>${biggest?biggest.word:'—'}</strong></div></div><div class="endNeed"><span>WINNER NEEDED</span><strong>${missing.length?missing.join(' '):'NONE'}</strong></div><div class="winnerActions"><button class="secondaryBtn" data-action="rematch">REMATCH</button>${unlockedNext!==null?`<button class="nextRankBtn" data-action="next">NEXT RANK</button>`:''}</div></div>`;
+ d.innerHTML=`<div class="winnerBox statsWinner"><div class="sub">${botBadge}${rankLine}</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2>${unlockText}<div class="awardList">${awards.map(a=>`<div class="awardCard"><span class="awardIcon">${a.icon}</span><div><span class="awardLabel">${a.label}</span><strong>${a.value}</strong></div></div>`).join('')}</div><div class="winnerActions"><button class="secondaryBtn" data-action="rematch">REMATCH</button>${unlockedNext!==null?`<button class="nextRankBtn" data-action="next">NEXT RANK</button>`:''}</div></div>`;
  d.querySelector('[data-action="rematch"]').onclick=()=>{d.remove();renderRanks();reset()};
  const next=d.querySelector('[data-action="next"]');if(next)next.onclick=()=>{botRank=unlockedNext;d.remove();renderRanks();reset()};
  document.body.appendChild(d)
@@ -211,10 +228,10 @@ $('passReady').onclick=()=>{passWait=false;document.body.classList.remove('showP
 function renderRanks(){
  const unlocked=unlockedBotRank();
  if(botRank>unlocked)botRank=unlocked;
- $('rankBtn').textContent=BOT_RANKS[botRank].name.toUpperCase();
+ $('rankBtn').innerHTML='<span class="botBadge tiny">'+BOT_RANKS[botRank].icon+'</span>'+BOT_RANKS[botRank].name.toUpperCase();
  $('rankList').innerHTML=BOT_RANKS.map((r,i)=>{
    const locked=i>unlocked;
-   return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''}><span class="rankNumber">${i+1}</span><span class="rankName">${r.name}</span><span class="rankState">${locked?'LOCKED':i===botRank?'SELECTED':'PLAY'}</span></button>`;
+   return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''}><span class="rankNumber">${r.icon}</span><span class="rankName">${r.name}</span><span class="rankState">${locked?'LOCKED':i===botRank?'SELECTED':'PLAY'}</span></button>`;
  }).join('');
  [...document.querySelectorAll('.rankOption:not([disabled])')].forEach(b=>b.onclick=()=>{botRank=+b.dataset.rank;document.body.classList.remove('showRanks');renderRanks();reset()});
 }
