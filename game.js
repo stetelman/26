@@ -144,6 +144,7 @@ function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=
 function showWinner(i){const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
 $('newGame').onclick=reset;
 $('inlineDelete').onclick=del;
+$('inlinePlay').onclick=play;
 $('modeBtn').onclick=()=>{
  if(mode==='bot'){mode='local';playerCount=2}
  else if(playerCount<4)playerCount++;
