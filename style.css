@@ -1407,3 +1407,27 @@ header .brandBlock>.sub{display:none!important}
 @media(max-width:600px){
   .legend{display:none!important}
 }
+
+.legendItem{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+}
+.legendKey{
+  width:12px;
+  height:12px;
+  border-radius:3px;
+  border:1px solid var(--line);
+  display:inline-block;
+}
+.legendKey.need{
+  background:#fffdf8;
+  border-color:#d8d2c7;
+}
+.legendKey.lockedNeed{
+  background:#c9d0dc;
+  border-color:#aab4c4;
+}
+.legendKey.earned{
+  background:#e4dfd6;
+}
