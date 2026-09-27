@@ -231,7 +231,7 @@ $('inlineDelete').onclick=()=>{haptic(7);del()};
 $('inlinePlay').onclick=()=>{haptic(14);tone(460,.035,.02);play()};
 function refreshModeLocks(){
  const unlocked=unlockedBotRank();
- const three=$('.modeChoice[data-mode="3"]'),four=$('.modeChoice[data-mode="4"]');
+ const three=document.querySelector('.modeChoice[data-mode="3"]'),four=document.querySelector('.modeChoice[data-mode="4"]');
  if(three){
    const open3=unlocked>=3;
    three.disabled=!open3;three.classList.toggle('lockedMode',!open3);
