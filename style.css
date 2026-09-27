@@ -1306,3 +1306,6 @@ header .brandBlock>.sub{display:none!important}
   max-width:92%;
   text-align:right!important;
 }
+
+/* Opening prompt lives in entry bar */
+.tutorialStart{display:none!important}
