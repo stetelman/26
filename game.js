@@ -42,7 +42,6 @@ function botMove(){
  const lock=lockedLetters();let best=null,bestScore=-1e9;
  const pool=commonWords.slice(0,2400);
  for(const w of pool){
-   if([...new Set(w)].some(ch=>lock.has(ch)))continue;
    const gain=gainedBy(w,current());let rare=0;for(const ch of gain)rare+=({Q:3,Z:2.6,X:2.3,J:2.2,K:1.4,V:1.3}[ch]||1);
    const score=gain.length*6+rare+w.length*.15;
    if(score>bestScore){bestScore=score;best=w}
