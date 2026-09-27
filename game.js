@@ -145,20 +145,16 @@ function renderWords(){
      const lines=[
        'PLAY A 3–7 LETTER WORD',
        'COLLECT NEW LETTERS',
-       'THE LAST WORD LOCKS YOUR NEXT LETTERS',
+       'LAST WORD LOCKS THE NEXT TURN',
        'FIRST TO A–Z WINS'
      ];
-     let delay=0;
-     const typed=lines.map((line,li)=>{
-       const chars=[...line].map(ch=>{
-         const out='<span class="tutorialChar" style="--d:'+delay+'ms">'+(ch===' '?'&nbsp;':ch)+'</span>';
-         delay+=34;
-         return out;
-       }).join('');
-       delay+=180;
+     let lineDelay=120;
+     const typed=lines.map(line=>{
+       const chars=[...line].map((ch,j)=>'<span class="tutorialChar" style="animation-delay:'+(lineDelay+j*28)+'ms">'+(ch===' '?'&nbsp;':ch)+'</span>').join('');
+       lineDelay+=line.length*28+220;
        return '<div class="tutorialLine">'+chars+'</div>';
      }).join('');
-     el.innerHTML='<div class="emptyStage tutorialStage">'+typed+'<div class="tutorialStart" style="--startDelay:'+delay+'ms">START</div></div>';
+     el.innerHTML='<div class="emptyStage tutorialStage">'+typed+'<div class="tutorialStart" style="animation-delay:'+(lineDelay+120)+'ms">START</div></div>';
    }
    return;
  }
