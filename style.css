@@ -40,3 +40,13 @@
 
 .tile.lockFresh{color:#315fae}
 .tile.lockAging{color:#6f7890}
+
+.wordEntry{position:relative;margin-top:10px}
+.wordEntry .wordDisplay{margin-top:0;padding-right:54px}
+.inlineDelete{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:36px;border:0;border-radius:8px;background:#20262e;color:var(--text);font-size:19px;font-weight:900;cursor:pointer}
+.inlineDelete:active{transform:translateY(-50%) scale(.94)}
+@media(max-width:600px){
+  .wordEntry{margin-top:6px}
+  .wordEntry .wordDisplay{margin-top:0;padding-right:46px}
+  .inlineDelete{right:4px;width:34px;height:30px;font-size:16px}
+}
