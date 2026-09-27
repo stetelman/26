@@ -146,31 +146,47 @@ function renderUI(){
    for(const l of row){
      const d=document.createElement('div'),need=!me.got.has(l),locked=lock.has(l);
      d.className='key '+(need?(locked?'lockedNeed':'need'):(locked?'locked':'earned'))+(blocked?' disabled':'');
-     d.innerHTML=l+(locked?'<small>1</small>':'');if(!blocked)d.onclick=()=>{if(typedWord.length<7){typedWord+=l;renderUI()}};
+     d.innerHTML=l+(locked?'<small>1</small>':'');if(!blocked)d.onclick=()=>{if(typedWord.length<7){typedWord+=l;haptic(8);tone(360,.025,.015);renderUI()}};
      r.appendChild(d)
    }kb.appendChild(r)
  }
 }
 function del(){if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
 function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Only the previous word is locked. Locked letters may be used but do not score.'},2200)}
+function haptic(pattern){try{if(navigator.vibrate)navigator.vibrate(pattern)}catch{}}
+function tone(freq=520,duration=.05,volume=.035){
+ try{
+   const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+   const c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=freq;o.type='sine';g.gain.value=volume;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+duration);o.stop(c.currentTime+duration);
+ }catch{}
+}
 function showWinner(i){
  const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);
- let unlockText='';
+ let unlockedNext=null;
  if(mode==='bot'&&i===0){
    const unlocked=unlockedBotRank();
    if(botRank===unlocked&&unlocked<BOT_RANKS.length-1){
-     localStorage.setItem(BOT_UNLOCK_KEY,String(unlocked+1));
-     unlockText=`<p class="unlockText">UNLOCKED: <strong>${BOT_RANKS[unlocked+1].name.toUpperCase()}</strong></p>`;
+     unlockedNext=unlocked+1;
+     localStorage.setItem(BOT_UNLOCK_KEY,String(unlockedNext));
    }
  }
  const winnerName=mode==='bot'?(i===0?'YOU':BOT_RANKS[botRank].name.toUpperCase()):'PLAYER '+(i+1);
+ const winnerMoves=moveHistory.filter(m=>m.player===i);
+ const biggest=winnerMoves.reduce((best,m)=>m.gained.length>(best?.gained?.length||-1)?m:best,null);
+ const uniqueWords=new Set(moveHistory.map(m=>m.word)).size;
+ const missing=ALPHA.filter(ch=>!players[i].got.has(ch));
+ const rankLine=mode==='bot'?BOT_RANKS[botRank].name.toUpperCase():'PASS & PLAY';
+ const unlockText=unlockedNext!==null?`<div class="unlockText"><span>UNLOCKED</span><strong>${BOT_RANKS[unlockedNext].name.toUpperCase()}</strong></div>`:'';
+ haptic([40,35,70]);tone(620,.08,.04);setTimeout(()=>tone(820,.1,.04),85);
  const d=document.createElement('div');d.className='winner';
- d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2><p>First to use all 26 letters.</p>${unlockText}<button>PLAY AGAIN</button></div>`;
- d.querySelector('button').onclick=()=>{d.remove();renderRanks();reset()};document.body.appendChild(d)
+ d.innerHTML=`<div class="winnerBox statsWinner"><div class="sub">${rankLine}</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2>${unlockText}<div class="statsGrid"><div><span>TURNS</span><strong>${moveHistory.length}</strong></div><div><span>WORDS</span><strong>${uniqueWords}</strong></div><div><span>BEST GAIN</span><strong>${biggest?biggest.gained.length:0}</strong></div><div><span>BEST WORD</span><strong>${biggest?biggest.word:'—'}</strong></div></div><div class="endNeed"><span>WINNER NEEDED</span><strong>${missing.length?missing.join(' '):'NONE'}</strong></div><div class="winnerActions"><button class="secondaryBtn" data-action="rematch">REMATCH</button>${unlockedNext!==null?`<button class="nextRankBtn" data-action="next">NEXT RANK</button>`:''}</div></div>`;
+ d.querySelector('[data-action="rematch"]').onclick=()=>{d.remove();renderRanks();reset()};
+ const next=d.querySelector('[data-action="next"]');if(next)next.onclick=()=>{botRank=unlockedNext;d.remove();renderRanks();reset()};
+ document.body.appendChild(d)
 }
 $('newGame').onclick=reset;
-$('inlineDelete').onclick=del;
-$('inlinePlay').onclick=play;
+$('inlineDelete').onclick=()=>{haptic(7);del()};
+$('inlinePlay').onclick=()=>{haptic(14);tone(460,.035,.02);play()};
 $('modeBtn').onclick=()=>{
  if(mode==='bot'){mode='local';playerCount=2}
  else if(playerCount<4)playerCount++;
@@ -179,7 +195,7 @@ $('modeBtn').onclick=()=>{
  $('rankBtn').style.display=mode==='bot'?'inline-flex':'none';
  reset()
 };
-document.addEventListener('keydown',e=>{if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter')play()});
+document.addEventListener('keydown',e=>{if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter'){tone(460,.035,.02);play()}});
 
 $('rulesBtn').onclick=()=>document.body.classList.add('showRules');
 $('closeRules').onclick=()=>document.body.classList.remove('showRules');
