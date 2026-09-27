@@ -282,7 +282,7 @@ $('passReady').onclick=()=>{passWait=false;document.body.classList.remove('showP
 function renderRanks(){
  const unlocked=unlockedBotRank();
  if(botRank>unlocked)botRank=unlocked;
- $('rankBtn').innerHTML='<span class="botBadge badge-'+botRank+' tiny">'+BOT_RANKS[botRank].icon+'</span>'+BOT_RANKS[botRank].name.toUpperCase();
+ $('rankBtn').textContent='BOT';
  refreshModeLocks();
  $('rankList').innerHTML=`<div class="ladderStats"><span>STREAK <strong>${botStreak()}</strong></span><span>BEST <strong>${botBestStreak()}</strong></span></div>`+BOT_RANKS.map((r,i)=>{
    const locked=i>unlocked;
