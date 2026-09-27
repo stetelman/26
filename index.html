@@ -8,11 +8,7 @@
   <div class="headerBtns"><button id="rulesBtn" class="ghost">?</button><button id="modeBtn" class="ghost">VS BOT</button><button id="newGame" class="ghost">New game</button></div>
 </header>
 
-<section class="meter">
-  <div class="player"><div class="label">PLAYER 1 <span id="p1count">0/26</span></div><div class="bar"><i id="p1bar"></i></div><div class="chance" id="p1chance">50%</div><div class="needLine">NEED <span id="p1need">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span></div></div>
-  <div class="vs">WIN CHANCE</div>
-  <div class="player p2"><div class="label">PLAYER 2 <span id="p2count">0/26</span></div><div class="bar"><i id="p2bar"></i></div><div class="chance" id="p2chance">50%</div><div class="needLine">NEED <span id="p2need">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span></div></div>
-</section>
+<section class="meter" id="meter"></section>
 
 <section class="wordStage">
   <div id="wordStream" class="wordStream"><div class="emptyStage">PLAY A WORD</div></div>
@@ -32,6 +28,6 @@
 </section>
 </div>
 <div id="passModal" class="passModal"><div class="passCard"><div class="sub">PASS & PLAY</div><h2>Pass to <span id="passPlayer">PLAYER 2</span></h2><p>Hand over the phone, then tap ready.</p><button id="passReady">READY</button></div></div>
-<div id="rulesModal" class="rulesModal"><div class="rulesCard"><button id="closeRules" class="rulesClose">×</button><div class="sub">HOW TO PLAY</div><h2>TYPESET</h2><p>Play a valid 3–7 letter word.</p><p>Every new letter you use fills that key for you.</p><p>Letters in the immediately previous word are locked for one turn. You may still use them, but they do not score.</p><p>No word may be repeated during the same game.</p><p><strong>First player to collect A–Z wins.</strong></p><p>Use PASS & PLAY to share one phone.</p></div></div>
+<div id="rulesModal" class="rulesModal"><div class="rulesCard"><button id="closeRules" class="rulesClose">×</button><div class="sub">HOW TO PLAY</div><h2>TYPESET</h2><p>Play a valid 3–7 letter word.</p><p>Every new letter you use fills that key for you.</p><p>Letters in the immediately previous word are locked for one turn. You may still use them, but they do not score.</p><p>No word may be repeated during the same game.</p><p><strong>First player to collect A–Z wins.</strong></p><p>PASS & PLAY supports 2–4 players on one phone.</p></div></div>
 <script src="game.js"></script>
 </body></html>
