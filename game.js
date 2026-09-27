@@ -1,6 +1,6 @@
 const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 const CELL=34, ORIGIN=450;
-let dict=new Set(), dictWords=[], board=new Map(), players=[], turn=0, moveHistory=[], placements=[], altIndex=0, gameOver=false, mode='bot', strategyStats={humanMoves:0,nonGreedy:0,totalGain:0,bestGain:0};
+let dict=new Set(), dictWords=[], board=new Map(), players=[], turn=0, moveHistory=[], placements=[], altIndex=0, gameOver=false, mode='bot', typedWord='', strategyStats={humanMoves:0,nonGreedy:0,totalGain:0,bestGain:0};
 const $=id=>document.getElementById(id);
 const key=(x,y)=>`${x},${y}`;
 const get=(x,y)=>board.get(key(x,y));
@@ -20,7 +20,7 @@ Promise.all([
   dict=new Set(dictWords);reset();msg('Dictionary fallback loaded.');
 });
 
-function reset(){board=new Map();players=[{got:new Set()},{got:new Set()}];turn=0;moveHistory=[];placements=[];strategyStats={humanMoves:0,nonGreedy:0,totalGain:0,bestGain:0};gameOver=false;render();$('wordInput').disabled=false;$('playBtn').disabled=false;$('wordInput').focus();}
+function reset(){board=new Map();players=[{got:new Set()},{got:new Set()}];turn=0;moveHistory=[];placements=[];typedWord='';strategyStats={humanMoves:0,nonGreedy:0,totalGain:0,bestGain:0};gameOver=false;render();}
 function lockedLetters(){const s=new Set();for(const m of moveHistory.slice(-2))for(const l of m.newLetters)s.add(l);return s;}
 function current(){return players[turn%2]}
 function other(){return players[(turn+1)%2]}
@@ -75,17 +75,17 @@ function findPlacements(word){
   }}
   return out.sort((a,b)=>b.gained.size-a.gained.size||b.created.length-a.created.length||b.overlaps-a.overlaps||a.x-b.x||a.y-b.y);
 }
-function play(){if(gameOver)return;const word=$('wordInput').value.toUpperCase().replace(/[^A-Z]/g,'');if(word.length<3){msg('Words must be at least 3 letters.');return}placements=findPlacements(word);altIndex=0;if(!placements.length){msg(dict.has(word)?'No legal placement for that word.':'Word not in prototype dictionary.');return}commit(placements[0]);}
+function play(){if(gameOver|| (mode==='bot'&&turn%2===1))return;const word=typedWord.toUpperCase().replace(/[^A-Z]/g,'');if(word.length<3){msg('Words must be at least 3 letters.');return}placements=findPlacements(word);altIndex=0;if(!placements.length){msg(dict.has(word)?'No legal placement for that word.':'Word not in prototype dictionary.');return}commit(placements[0]);}
 function commit(p,source='human'){
   const actor=turn%2;
   if(source==='human' && mode==='bot' && actor===0) assessHumanMove(p);
   for(const [x,y,ch] of p.newCells)board.set(key(x,y),ch);
   for(const ch of p.allLetters)current().got.add(ch);
   moveHistory.push({player:actor,word:p.word,newLetters:new Set(p.newCells.map(c=>c[2])),created:p.created,gained:[...p.gained],source});
-  $('wordInput').value='';
+  typedWord='';
   if(current().got.size===26){gameOver=true;render();showWinner(actor);return}
   turn++;render();
-  if(mode==='bot' && turn%2===1 && !gameOver){$('wordInput').disabled=true;$('playBtn').disabled=true;msg('Bot is thinking…');setTimeout(botMove,180)}
+  if(mode==='bot' && turn%2===1 && !gameOver){msg('Bot is thinking…');setTimeout(botMove,180)}
 }
 function candidateWordsFor(player){
   const need=ALPHA.filter(l=>!player.got.has(l));
@@ -115,9 +115,9 @@ function bestBotMove(){
 function botMove(){
   if(gameOver||mode!=='bot'||turn%2!==1)return;
   const p=bestBotMove();
-  if(!p){msg('Bot passes — no move found.');turn++;render();$('wordInput').disabled=false;$('playBtn').disabled=false;return}
+  if(!p){msg('Bot passes — no move found.');turn++;render();return}
   commit(p,'bot');
-  if(!gameOver){$('wordInput').disabled=false;$('playBtn').disabled=false;$('wordInput').focus()}
+  if(!gameOver){render()}
 }
 function sampledBestCoverage(){
   let best=0,checked=0;
@@ -167,11 +167,17 @@ function renderBoard(){
 }
 function renderUI(){const me=current(),lock=lockedLetters();$('turnName').textContent=`PLAYER ${turn%2+1}`;$('status').textContent=`${lock.size?lock.size+' letters locked':'Opening move'}`;
   players.forEach((p,i)=>{$(`p${i+1}count`).textContent=`${p.got.size}/26`;$(`p${i+1}bar`).style.width=(p.got.size/26*100)+'%'});const [a,b]=winChance();$('p1chance').textContent=a+'%';$('p2chance').textContent=b+'%';
-  const rows=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];const kb=$('keyboard');kb.innerHTML='';for(const row of rows){const r=document.createElement('div');r.className='row';for(const l of row){const d=document.createElement('div');const need=!me.got.has(l),locked=lock.has(l);d.className='key '+(need?(locked?'lockedNeed':'need'):(locked?'locked':'earned'));d.textContent=l;if(!locked){d.onclick=()=>{const input=$('wordInput');if(input.disabled||gameOver)return;if(input.value.length<16){input.value=(input.value+l).toUpperCase();input.focus()}}}r.appendChild(d)}kb.appendChild(r)}
+  const display=$('wordDisplay');if(display){display.textContent=typedWord||'TYPE A WORD';display.classList.toggle('empty',!typedWord)}
+  const rows=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];const kb=$('keyboard');kb.innerHTML='';const blocked=gameOver||(mode==='bot'&&turn%2===1);for(const row of rows){const r=document.createElement('div');r.className='row';for(const l of row){const d=document.createElement('div');const need=!me.got.has(l),locked=lock.has(l);d.className='key '+(need?(locked?'lockedNeed':'need'):(locked?'locked':'earned'))+(blocked?' disabled':'');d.textContent=l;if(!locked&&!blocked){d.onclick=()=>{if(typedWord.length<16){typedWord+=l;renderUI()}}}r.appendChild(d)}kb.appendChild(r)}
+  const actions=document.createElement('div');actions.className='row';
+  const back=document.createElement('div');back.className='key action'+(blocked?' disabled':'');back.textContent='⌫';if(!blocked)back.onclick=()=>{typedWord=typedWord.slice(0,-1);renderUI()};
+  const enter=document.createElement('div');enter.className='key action playKey'+(blocked?' disabled':'');enter.textContent='PLAY';if(!blocked)enter.onclick=play;
+  actions.appendChild(back);actions.appendChild(enter);kb.appendChild(actions)
   const st=$('strategyStats');if(st){const n=strategyStats.humanMoves;st.innerHTML=n?`<strong>${strategyStats.nonGreedy}/${n}</strong> of your moves chose less raw coverage than the sampled maximum · avg gain <strong>${(strategyStats.totalGain/n).toFixed(1)}</strong> vs sampled best <strong>${(strategyStats.bestGain/n).toFixed(1)}</strong>`:'Play a few turns to compare your choices with raw letter coverage.';}
   $('history').innerHTML=moveHistory.slice(-6).reverse().map(m=>`<div class='move'><strong>P${m.player+1} · ${m.word}</strong> → ${m.created.join(' + ')} ${m.gained.length?`· gained ${m.gained.join('')}`:''}</div>`).join('')||`<div class='move'>No moves yet.</div>`;
   $('altBtn').classList.toggle('hidden',placements.length<2)
 }
 function msg(t){$('help').textContent=t;setTimeout(()=>{$('help').textContent='Place 2–7 new letters. Existing letters may be reused.'},2600)}
 function showWinner(i){const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class='winnerBox'><div class='sub'>ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
-$('playBtn').onclick=play;$('wordInput').addEventListener('keydown',e=>{if(e.key==='Enter')play()});$('newGame').onclick=reset;$('altBtn').onclick=tryAlt;$('modeBtn').onclick=()=>{mode=mode==='bot'?'local':'bot';$('modeBtn').textContent=mode==='bot'?'VS BOT':'2 PLAYER';reset()};
+$('newGame').onclick=reset;$('altBtn').onclick=tryAlt;$('modeBtn').onclick=()=>{mode=mode==='bot'?'local':'bot';$('modeBtn').textContent=mode==='bot'?'VS BOT':'2 PLAYER';reset()};
+document.addEventListener('keydown',e=>{if(gameOver||(mode==='bot'&&turn%2===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<16){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace'){typedWord=typedWord.slice(0,-1);renderUI()}else if(e.key==='Enter'){play()}});
