@@ -294,6 +294,9 @@ function renderRanks(){
  $('rankBtn').innerHTML='<span class="rankLetter">'+String.fromCharCode(65+botRank)+'</span><span class="rankDot">·</span><span class="rankDescriptor">'+BOT_RANKS[botRank].name.toUpperCase()+'</span>';
  refreshModeLocks();
  $('ladderStats').innerHTML='<span>STREAK <strong>'+botStreak()+'</strong></span><span>BEST <strong>'+botBestStreak()+'</strong></span>';
+ const unlockedCount=unlocked+1;
+ const progressPct=Math.round(unlockedCount/BOT_RANKS.length*100);
+ $('ladderProgress').innerHTML='<div class="ladderProgressTop"><span>BOT PROGRESS</span><strong>'+unlockedCount+' / '+BOT_RANKS.length+' · '+progressPct+'%</strong></div><div class="ladderProgressBar"><i style="width:'+progressPct+'%"></i></div>';
  $('rankList').innerHTML=BOT_RANKS.map((r,i)=>{
    const locked=i>unlocked;
    return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''} aria-label="${r.name}${locked?' locked':i===botRank?' selected':''}"><span class="rankNumber">${r.icon}</span><span class="rankName">${r.name}</span>${i===botRank?'<span class="rankCheck">✓</span>':locked?'<span class="rankLock">·</span>':''}</button>`;
