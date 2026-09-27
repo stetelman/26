@@ -27,6 +27,7 @@ const BOT_RANKS=BOT_NAMES.map((name,i)=>{
  };
 });
 let botRank=0;
+let tutorialStartTimer=null;
 const $=id=>document.getElementById(id);
 
 Promise.all([
@@ -154,7 +155,12 @@ function renderWords(){
        lineDelay+=line.length*28+220;
        return '<div class="tutorialLine">'+chars+'</div>';
      }).join('');
-     el.innerHTML='<div class="emptyStage tutorialStage">'+typed+'<div class="tutorialStart" style="animation-delay:'+(lineDelay+120)+'ms">START</div></div>';
+     el.innerHTML='<div class="emptyStage tutorialStage">'+typed+'<div class="tutorialStart">START</div></div>';
+     clearTimeout(tutorialStartTimer);
+     tutorialStartTimer=setTimeout(()=>{
+       const start=el.querySelector('.tutorialStart');
+       if(start)start.classList.add('show');
+     },lineDelay+120);
    }
    return;
  }
