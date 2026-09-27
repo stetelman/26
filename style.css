@@ -1267,3 +1267,15 @@ header .brandBlock>.sub{display:none!important}
   width:100%;
   text-align:center;
 }
+
+/* Safari-safe tutorial START reveal */
+.tutorialStart{
+  opacity:0!important;
+  transform:translateY(3px);
+  animation:none!important;
+}
+.tutorialStart.show{
+  opacity:1!important;
+  transform:none;
+  transition:opacity .16s ease,transform .16s ease;
+}
