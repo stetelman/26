@@ -674,3 +674,23 @@ header h1{color:#25231f}
   color:var(--muted);
 }
 .modeChoice:disabled:active{transform:none}
+
+/* Simplified header controls */
+#modeBtn{
+  min-width:50px;
+}
+.escKey{
+  width:30px;
+  min-width:30px!important;
+  padding:0!important;
+  font-size:8px!important;
+  letter-spacing:.04em!important;
+}
+@media(max-width:600px){
+  #modeBtn{min-width:46px}
+  .escKey{
+    width:27px;
+    min-width:27px!important;
+    font-size:7px!important;
+  }
+}
