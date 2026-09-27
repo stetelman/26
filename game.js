@@ -81,7 +81,7 @@ function commit(p,source='human'){
   if(source==='human' && mode==='bot' && actor===0) assessHumanMove(p);
   for(const [x,y,ch] of p.newCells)board.set(key(x,y),ch);
   for(const ch of p.allLetters)current().got.add(ch);
-  moveHistory.push({player:actor,word:p.word,newLetters:new Set(p.newCells.map(c=>c[2])),created:p.created,gained:[...p.gained],source});
+  moveHistory.push({player:actor,word:p.word,newLetters:new Set(p.newCells.map(c=>c[2])),newCells:p.newCells.map(([x,y,ch])=>({x,y,ch})),created:p.created,gained:[...p.gained],source});
   typedWord='';
   if(current().got.size===26){gameOver=true;render();showWinner(actor);return}
   turn++;render();
@@ -156,8 +156,14 @@ function renderBoard(){
   const xStep=size*.72,yStep=size*.86;
   const boardW=(cols-1)*xStep+size,boardH=(rows-1)*yStep+size;
   const left=(wrap.clientWidth-boardW)/2,top=(wrap.clientHeight-boardH)/2;
+  const recent=moveHistory.slice(-2);
+  const olderLocked=new Set((recent[0]?.newCells||[]).map(c=>key(c.x,c.y)));
+  const newestLocked=new Set((recent[1]?.newCells||[]).map(c=>key(c.x,c.y)));
   for(const c of cells){
     const d=document.createElement('div');d.className='tile';d.textContent=c.ch;
+    const k=key(c.x,c.y);
+    if(newestLocked.has(k))d.classList.add('lockFresh');
+    else if(olderLocked.has(k))d.classList.add('lockAging');
     d.style.width=size+'px';d.style.height=size+'px';
     d.style.fontSize=Math.max(12,Math.floor(size*.64))+'px';
     d.style.left=(left+(c.x-minX)*xStep)+'px';
