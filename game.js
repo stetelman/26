@@ -43,6 +43,8 @@ function legalWord(word){
  if(word.length<3||word.length>7)return {ok:false,msg:'Use a 3–7 letter word.'};
  if(!dict.has(word))return {ok:false,msg:'That word is not in the dictionary.'};
  if(moveHistory.some(m=>m.word===word))return {ok:false,msg:'That word has already been played.'};
+ const lock=lockedLetters();
+ if([...new Set(word)].some(ch=>lock.has(ch)))return {ok:false,msg:'That word uses a locked letter.'};
  return {ok:true};
 }
 function play(){
@@ -82,7 +84,9 @@ function botMove(){
  const opp=players[0],oppNeed=new Set(ALPHA.filter(ch=>!opp.got.has(ch)));
  for(const w of pool){
    if(recent.has(w)||usedThisGame.has(w))continue;
-   const unique=[...new Set(w)],gain=gainedBy(w,current());let rare=0;
+   const unique=[...new Set(w)];
+   if(unique.some(ch=>lockedLetters().has(ch)))continue;
+   const gain=gainedBy(w,current());let rare=0;
    for(const ch of gain)rare+=({Q:3,Z:2.6,X:2.3,J:2.2,K:1.4,V:1.3}[ch]||1);
    const blockValue=unique.filter(ch=>oppNeed.has(ch)).length;
    const commonBoost=commonWordSet.has(w)?1.6:0;
@@ -149,14 +153,14 @@ function renderUI(){
    const r=document.createElement('div');r.className='row';
    for(const l of row){
      const d=document.createElement('div'),need=!me.got.has(l),locked=lock.has(l);
-     d.className='key '+(need?(locked?'lockedNeed':'need'):(locked?'locked':'earned'))+(blocked?' disabled':'');
-     d.innerHTML=l+(locked?'<small>1</small>':'');if(!blocked)d.onclick=()=>{if(typedWord.length<7){typedWord+=l;haptic(8);tone(360,.025,.015);renderUI()}};
+     d.className='key '+(need?(locked?'lockedNeed':'need'):(locked?'locked':'earned'))+((blocked||locked)?' disabled':'');
+     d.innerHTML=l+(locked?'<small>LOCK</small>':'');if(!blocked&&!locked)d.onclick=()=>{if(typedWord.length<7){typedWord+=l;haptic(8);tone(360,.025,.015);renderUI()}};
      r.appendChild(d)
    }kb.appendChild(r)
  }
 }
 function del(){if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
-function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Only the previous word is locked. Locked letters may be used but do not score.'},2200)}
+function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Letters in the previous word are unavailable this turn.'},2200)}
 function haptic(pattern){try{if(navigator.vibrate)navigator.vibrate(pattern)}catch{}}
 function tone(freq=520,duration=.05,volume=.035){
  try{
@@ -225,7 +229,15 @@ $('modeModal').onclick=e=>{if(e.target.id==='modeModal')document.body.classList.
  document.body.classList.remove('showMode');
  reset();
 });
-document.addEventListener('keydown',e=>{if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter'){tone(460,.035,.02);play()}});
+document.addEventListener('keydown',e=>{
+ if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;
+ if(/^[a-z]$/i.test(e.key)&&typedWord.length<7){
+   const ch=e.key.toUpperCase();
+   if(lockedLetters().has(ch)){msg(ch+' is locked this turn.');return}
+   typedWord+=ch;renderUI();
+ }else if(e.key==='Backspace')del();
+ else if(e.key==='Enter'){tone(460,.035,.02);play()}
+});
 
 $('rulesBtn').onclick=()=>document.body.classList.add('showRules');
 $('closeRules').onclick=()=>document.body.classList.remove('showRules');
