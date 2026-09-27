@@ -889,3 +889,30 @@ header h1{color:#25231f}
     min-width:29px!important;
   }
 }
+
+/* Ensure header keys remain tappable above animated title */
+header{
+  position:relative;
+}
+.brandBlock{
+  position:relative;
+  z-index:1;
+  pointer-events:none;
+}
+.headerBtns{
+  position:relative;
+  z-index:5;
+  pointer-events:auto;
+}
+.headerBtns button,
+.rankBtn{
+  position:relative;
+  z-index:6;
+  pointer-events:auto;
+  -webkit-tap-highlight-color:transparent;
+}
+.typedTitle,
+.typedTitle span,
+.typedTitle:after{
+  pointer-events:none;
+}
