@@ -1247,3 +1247,23 @@ header .brandBlock>.sub{display:none!important}
     letter-spacing:.02em;
   }
 }
+
+/* Stabilize first-game typing sequence */
+.tutorialChar{
+  opacity:0;
+  animation-name:tutorialType!important;
+  animation-duration:.01s!important;
+  animation-timing-function:steps(1,end)!important;
+  animation-fill-mode:both!important;
+}
+.tutorialStart{
+  opacity:0;
+  animation-name:tutorialStartIn!important;
+  animation-duration:.18s!important;
+  animation-timing-function:ease!important;
+  animation-fill-mode:both!important;
+}
+.tutorialLine{
+  width:100%;
+  text-align:center;
+}
