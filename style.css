@@ -160,3 +160,17 @@ header h1{color:#25231f}
 .botBadge.tiny{width:18px;height:18px;font-size:7px;margin-right:5px}
 .rankNumber{font-size:8px}
 .statsGrid,.endNeed{display:none}
+
+.streakStrip,.ladderStats{display:flex;justify-content:space-between;gap:10px;background:#f1ede5;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:9px;font-weight:900;letter-spacing:.06em;margin:9px 0}
+.ladderStats{margin:0 0 9px}
+.botBadge{position:relative;overflow:hidden}
+.badge-0{background:#f4efe6}
+.badge-1{background:#ece8df;border-style:dashed}
+.badge-2{background:#e6e2d9;box-shadow:inset 0 -3px 0 #d2cbc0,0 2px 0 #d8d2c7}
+.badge-3{background:#dde3eb;border-color:#b8c3d2}
+.badge-4{background:#d6dfec;border-color:#a7b7cd;font-weight:950}
+.badge-5{background:#dfe8dd;border-color:#b6c8b2}
+.badge-6{background:#e7dfd4;border:2px double #b9aa98}
+.badge-7{background:#d9d1c3;border-color:#998b76;box-shadow:inset 0 0 0 2px #f6f0e6,0 2px 0 #c4b8a7}
+.badge-7:after{content:"★";position:absolute;right:1px;bottom:-1px;font-size:6px}
+.rankOption .botBadge{margin:0;width:28px;height:28px}
