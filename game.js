@@ -54,9 +54,9 @@ function play(){
  commit(word,'human');
 }
 function commit(word,source){
- const actor=activePlayer();const lock=lockedLetters();const gained=gainedBy(word,current());
+ const actor=activePlayer();const lock=lockedLetters();const gained=turn===0?[]:gainedBy(word,current());
  for(const ch of gained)current().got.add(ch);
- if(turn>0)for(const ch of new Set(word))if(!lock.has(ch))lockUntil.set(ch,turn+2);
+ for(const ch of new Set(word))if(!lock.has(ch))lockUntil.set(ch,turn+2);
  moveHistory.push({player:actor,word,gained,source});
  typedWord='';
  if(current().got.size===26){gameOver=true;render();showWinner(actor);return}
