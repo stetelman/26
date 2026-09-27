@@ -29,6 +29,8 @@ const BOT_RANKS=BOT_NAMES.map((name,i)=>{
 let botRank=0;
 let tutorialTimer=null;
 let tutorialToken=0;
+let entryPromptTimer=null;
+let entryPromptReady=false;
 const $=id=>document.getElementById(id);
 
 Promise.all([
@@ -50,7 +52,7 @@ function botStreak(){return Math.max(0,parseInt(localStorage.getItem(BOT_STREAK_
 function botBestStreak(){return Math.max(0,parseInt(localStorage.getItem(BOT_BEST_STREAK_KEY)||'0',10)||0)}
 function botFastestWin(){const n=parseInt(localStorage.getItem(BOT_FASTEST_WIN_KEY)||'0',10);return n>0?n:0}
 function botHighestBeat(){const n=parseInt(localStorage.getItem(BOT_HIGHEST_BEAT_KEY)||'-1',10);return Math.max(-1,Math.min(BOT_RANKS.length-1,isNaN(n)?-1:n))}
-function reset(){const n=mode==='bot'?2:playerCount;players=Array.from({length:n},()=>({got:new Set()}));turn=0;moveHistory=[];lockUntil=new Map();gameOver=false;typedWord='';passWait=false;document.body.classList.remove('showPass');render()}
+function reset(){const n=mode==='bot'?2:playerCount;players=Array.from({length:n},()=>({got:new Set()}));turn=0;moveHistory=[];lockUntil=new Map();gameOver=false;typedWord='';passWait=false;entryPromptReady=localStorage.getItem(TYPESET_TUTORIAL_KEY)==='1';clearTimeout(entryPromptTimer);document.body.classList.remove('showPass');render()}
 function current(){return players[turn%players.length]}
 function activePlayer(){return turn%players.length}
 function lockedLetters(){const s=new Set();for(const [ch,until] of lockUntil)if(turn<until)s.add(ch);return s}
@@ -223,7 +225,7 @@ function renderUI(){
  $('turnName').textContent=mode==='bot'?(activePlayer()===0?'YOU':BOT_RANKS[botRank].name.toUpperCase()):'PLAYER '+(activePlayer()+1);
  const blocked=gameOver||passWait||(mode==='bot'&&activePlayer()===1);
  $('status').textContent=blocked?(mode==='bot'?'Bot turn':'Pass device'):'Your turn';
- const display=$('wordDisplay');const placeholder=turn===0?'START':'TYPE A WORD';display.innerHTML=(typedWord?typedWord:placeholder)+'<span class="cursor">|</span>';display.classList.toggle('empty',!typedWord);
+ const display=$('wordDisplay');const placeholder=turn===0?(entryPromptReady?'TYPE A WORD':''):'TYPE A WORD';display.innerHTML=(typedWord?typedWord:placeholder)+'<span class="cursor">|</span>';display.classList.toggle('empty',!typedWord);
  const kb=$('keyboard');kb.innerHTML='';
  for(const row of ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM']){
    const r=document.createElement('div');r.className='row';
