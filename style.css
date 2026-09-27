@@ -828,3 +828,30 @@ header h1{color:#25231f}
   .openingStage span{font-size:8px}
   .needLine{font-size:7px}
 }
+
+.openingNote{
+  display:none;
+  margin:5px auto -1px;
+  width:min(100%,620px);
+  text-align:center;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.09em;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+.openingNote.show{display:block}
+.startStage{
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.16em;
+  color:#9c978d;
+}
+@media(max-width:600px){
+  .openingNote{
+    margin:4px auto 0;
+    font-size:7px;
+    letter-spacing:.07em;
+  }
+  .startStage{font-size:13px}
+}
