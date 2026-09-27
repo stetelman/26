@@ -214,14 +214,17 @@ function showWinner(i){
 $('newGame').onclick=reset;
 $('inlineDelete').onclick=()=>{haptic(7);del()};
 $('inlinePlay').onclick=()=>{haptic(14);tone(460,.035,.02);play()};
-$('modeBtn').onclick=()=>{
- if(mode==='bot'){mode='local';playerCount=2}
- else if(playerCount<4)playerCount++;
- else{mode='bot';playerCount=2}
+$('modeBtn').onclick=()=>document.body.classList.add('showMode');
+$('closeMode').onclick=()=>document.body.classList.remove('showMode');
+$('modeModal').onclick=e=>{if(e.target.id==='modeModal')document.body.classList.remove('showMode')};
+[...document.querySelectorAll('.modeChoice')].forEach(b=>b.onclick=()=>{
+ const v=b.dataset.mode;
+ if(v==='bot'){mode='bot';playerCount=2}else{mode='local';playerCount=+v}
  $('modeBtn').textContent=mode==='bot'?'VS BOT':playerCount+' PLAYERS';
  $('rankBtn').style.display=mode==='bot'?'inline-flex':'none';
- reset()
-};
+ document.body.classList.remove('showMode');
+ reset();
+});
 document.addEventListener('keydown',e=>{if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter'){tone(460,.035,.02);play()}});
 
 $('rulesBtn').onclick=()=>document.body.classList.add('showRules');
