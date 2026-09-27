@@ -16,12 +16,10 @@ Promise.all([
 function reset(){players=[{got:new Set()},{got:new Set()}];turn=0;moveHistory=[];gameOver=false;typedWord='';render()}
 function current(){return players[turn%2]}
 function lockedLetters(){const s=new Set();for(const m of moveHistory.slice(-2))for(const ch of new Set(m.word))s.add(ch);return s}
-function gainedBy(word,p=current()){return [...new Set(word)].filter(ch=>!p.got.has(ch))}
+function gainedBy(word,p=current()){const lock=lockedLetters();return [...new Set(word)].filter(ch=>!p.got.has(ch)&&!lock.has(ch))}
 function legalWord(word){
  if(word.length<3||word.length>7)return {ok:false,msg:'Use a 3–7 letter word.'};
  if(!dict.has(word))return {ok:false,msg:'That word is not in the dictionary.'};
- const locked=lockedLetters(),hit=[...new Set(word)].filter(ch=>locked.has(ch));
- if(hit.length)return {ok:false,msg:`Locked: ${hit.join(' ')}`};
  return {ok:true};
 }
 function play(){
@@ -32,7 +30,7 @@ function play(){
 }
 function commit(word,source){
  const actor=turn%2;const gained=gainedBy(word,current());
- for(const ch of new Set(word))current().got.add(ch);
+ for(const ch of gained)current().got.add(ch);
  moveHistory.push({player:actor,word,gained,source});
  typedWord='';
  if(current().got.size===26){gameOver=true;render();showWinner(actor);return}
