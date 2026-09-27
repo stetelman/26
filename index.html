@@ -1,26 +1,33 @@
 <!doctype html>
-<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
-<title>TYPESET</title><link rel='stylesheet' href='style.css'></head>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TYPESET</title><link rel="stylesheet" href="style.css"></head>
 <body>
-<div class='app'>
+<div class="app">
 <header>
-  <div><h1>TYPESET</h1><div class='sub'>Press all the keys to win.</div></div>
-  <div><button id='modeBtn' class='ghost'>VS BOT</button> <button id='newGame' class='ghost'>New game</button></div>
+  <div><h1>TYPESET</h1><div class="sub">Press all the keys to win.</div></div>
+  <div class="headerBtns"><button id="modeBtn" class="ghost">VS BOT</button><button id="newGame" class="ghost">New game</button></div>
 </header>
-<section class='meter'>
-  <div class='player p1'><div class='label'>PLAYER 1 <span id='p1count'>0/26</span></div><div class='bar'><i id='p1bar'></i></div><div class='chance' id='p1chance'>50%</div></div>
-  <div class='vs'>WIN CHANCE</div>
-  <div class='player p2'><div class='label'>PLAYER 2 <span id='p2count'>0/26</span></div><div class='bar'><i id='p2bar'></i></div><div class='chance' id='p2chance'>50%</div></div>
+
+<section class="meter">
+  <div class="player"><div class="label">PLAYER 1 <span id="p1count">0/26</span></div><div class="bar"><i id="p1bar"></i></div><div class="chance" id="p1chance">50%</div></div>
+  <div class="vs">WIN CHANCE</div>
+  <div class="player p2"><div class="label">PLAYER 2 <span id="p2count">0/26</span></div><div class="bar"><i id="p2bar"></i></div><div class="chance" id="p2chance">50%</div></div>
 </section>
-<section class='boardWrap'><div id='board' class='board'></div></section>
-<section class='turnPanel'>
-  <div class='turnLine'><span id='turnName'>PLAYER 1</span><span id='status'>Type a word</span></div>
-  <div class='wordEntry'><div id='wordDisplay' class='wordDisplay empty'>TYPE A WORD</div><button id='inlineDelete' class='inlineDelete' aria-label='Delete last letter'>⌫</button></div>
-  <div class='help' id='help'>Place 2–7 new letters. Existing letters may be reused.</div>
-  <button id='altBtn' class='ghost alt hidden'>Other placements</button>
+
+<section class="wordStage">
+  <div id="wordStream" class="wordStream"><div class="emptyStage">PLAY A WORD</div></div>
 </section>
-<section><div class='sectionTitle'>KEYBOARD</div><div id='keyboard' class='keyboard'></div><div class='legend'><span><b class='need'></b>needed</span><span><b class='lockedNeed'></b>needed + locked</span><span><b class='earned'></b>earned</span><span><b class='locked'></b>earned + locked</span></div></section>
-<section class='history'><div class='sectionTitle'>STRATEGY TEST</div><div id='strategyStats' class='move'>Play a few turns to compare your choices with raw letter coverage.</div><div class='sectionTitle'>RECENT MOVES</div><div id='history'></div></section>
+
+<section class="turnPanel">
+  <div class="turnLine"><span id="turnName">PLAYER 1</span><span id="status">Type a word</span></div>
+  <div class="wordEntry"><div id="wordDisplay" class="wordDisplay empty">TYPE A WORD</div><button id="inlineDelete" class="inlineDelete" aria-label="Delete last letter">⌫</button></div>
+  <div class="help" id="help">Use a 3–7 letter word. Letters from the last two plays are locked.</div>
+</section>
+
+<section class="keyboardSection">
+  <div id="keyboard" class="keyboard"></div>
+  <div class="legend"><span><b class="need"></b>needed</span><span><b class="lockedNeed"></b>needed + locked</span><span><b class="earned"></b>earned</span><span><b class="locked"></b>earned + locked</span></div>
+</section>
 </div>
-<script src='game.js'></script>
+<script src="game.js"></script>
 </body></html>
