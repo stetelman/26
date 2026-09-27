@@ -6,6 +6,7 @@ const BOT_STREAK_KEY='typesetBotStreak';
 const BOT_BEST_STREAK_KEY='typesetBotBestStreak';
 const BOT_FASTEST_WIN_KEY='typesetBotFastestWin';
 const BOT_HIGHEST_BEAT_KEY='typesetBotHighestBeat';
+const TYPESET_TUTORIAL_KEY='typesetTutorialComplete';
 const BOT_NAMES=[
  'Apprentice','Bookworm','Copy Clerk','Dabbler','Editor','Factchecker',
  'Grammarian','Headliner','Inker','Journalist','Keysmith','Lexicographer',
@@ -134,7 +135,33 @@ function renderHelp(){
 }
 function render(){renderUI();renderWords();renderHelp()}
 function renderWords(){
- const el=$('wordStream');if(!moveHistory.length){el.className='wordStream';el.innerHTML='<div class="emptyStage startStage">START</div>';return}
+ const el=$('wordStream');
+ if(!moveHistory.length){
+   el.className='wordStream';
+   const seenTutorial=localStorage.getItem(TYPESET_TUTORIAL_KEY)==='1';
+   if(seenTutorial){
+     el.innerHTML='<div class="emptyStage startStage">START</div>';
+   }else{
+     const lines=[
+       'PLAY A 3–7 LETTER WORD',
+       'COLLECT NEW LETTERS',
+       'THE LAST WORD LOCKS YOUR NEXT LETTERS',
+       'FIRST TO A–Z WINS'
+     ];
+     let delay=0;
+     const typed=lines.map((line,li)=>{
+       const chars=[...line].map(ch=>{
+         const out='<span class="tutorialChar" style="--d:'+delay+'ms">'+(ch===' '?'&nbsp;':ch)+'</span>';
+         delay+=34;
+         return out;
+       }).join('');
+       delay+=180;
+       return '<div class="tutorialLine">'+chars+'</div>';
+     }).join('');
+     el.innerHTML='<div class="emptyStage tutorialStage">'+typed+'<div class="tutorialStart" style="--startDelay:'+delay+'ms">START</div></div>';
+   }
+   return;
+ }
  const lock=lockedLetters(),recent=moveHistory.slice(-10);
  if(players.length<=2){
    el.className='wordStream';
@@ -199,6 +226,7 @@ function tone(freq=520,duration=.05,volume=.035){
  }catch{}
 }
 function showWinner(i){
+ localStorage.setItem(TYPESET_TUTORIAL_KEY,'1');
  const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);
  let unlockedNext=null;
  let streakNow=botStreak(),bestNow=botBestStreak();
