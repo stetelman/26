@@ -1476,3 +1476,43 @@ header .brandBlock>.sub{display:none!important}
     text-align-last:auto!important;
   }
 }
+
+/* Mobile keyboard visibility guard */
+@media(max-width:600px){
+  .keyboardSection{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    flex:0 0 auto!important;
+    width:100%!important;
+    padding-bottom:max(2px,env(safe-area-inset-bottom))!important;
+  }
+  .keyboard{
+    display:block!important;
+    visibility:visible!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  .keyboard .row{
+    display:flex!important;
+    gap:3px!important;
+    margin:3px 0!important;
+  }
+  .keyboard .key{
+    display:flex!important;
+    height:32px!important;
+    min-height:32px!important;
+    width:9.45%!important;
+    min-width:0!important;
+    max-width:none!important;
+    font-size:11px!important;
+  }
+  .wordStage{
+    flex:1 1 auto!important;
+    min-height:110px!important;
+    height:auto!important;
+    max-height:none!important;
+    aspect-ratio:auto!important;
+    margin:5px auto!important;
+  }
+}
