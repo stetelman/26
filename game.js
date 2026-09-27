@@ -4,16 +4,25 @@ const BOT_HISTORY_KEY='typesetBotRecentGames';
 const BOT_UNLOCK_KEY='typesetUnlockedBotRank';
 const BOT_STREAK_KEY='typesetBotStreak';
 const BOT_BEST_STREAK_KEY='typesetBotBestStreak';
-const BOT_RANKS=[
- {name:'Dabbler',icon:'⌨',sample:140,shortlist:28,pick:18,noise:4.2,defense:.25},
- {name:'Typist',icon:'T',sample:220,shortlist:24,pick:14,noise:3.2,defense:.45},
- {name:'Copy Clerk',icon:'C',sample:320,shortlist:20,pick:11,noise:2.4,defense:.7},
- {name:'Stenographer',icon:'S',sample:440,shortlist:16,pick:8,noise:1.7,defense:.95},
- {name:'Typesetter',icon:'TS',sample:600,shortlist:12,pick:6,noise:1.2,defense:1.2},
- {name:'Proofreader',icon:'✓',sample:760,shortlist:10,pick:4,noise:.8,defense:1.4},
- {name:'Court Reporter',icon:'CR',sample:950,shortlist:8,pick:3,noise:.5,defense:1.6},
- {name:'Wordsmith',icon:'W',sample:1200,shortlist:6,pick:2,noise:.25,defense:1.8}
+const BOT_NAMES=[
+ 'Apprentice','Bookworm','Copy Clerk','Dabbler','Editor','Factchecker',
+ 'Grammarian','Headliner','Inker','Journalist','Keysmith','Lexicographer',
+ 'Monotyper','Novelist','Operator','Proofreader','Quillmaster','Reporter',
+ 'Stenographer','Typesetter','Understudy','Verbalist','Wordsmith',
+ 'Xylographer','Yarnspinner','Zenith'
 ];
+const BOT_RANKS=BOT_NAMES.map((name,i)=>{
+ const t=i/25;
+ return {
+   name,
+   icon:String.fromCharCode(65+i),
+   sample:Math.round(140+(1200-140)*t),
+   shortlist:Math.max(6,Math.round(28-(22*t))),
+   pick:Math.max(2,Math.round(18-(16*t))),
+   noise:+(4.2-(3.95*t)).toFixed(2),
+   defense:+(.25+(1.55*t)).toFixed(2)
+ };
+});
 let botRank=0;
 const $=id=>document.getElementById(id);
 
@@ -241,12 +250,12 @@ function refreshModeLocks(){
  if(three){
    const open3=unlocked>=3;
    three.disabled=!open3;three.classList.toggle('lockedMode',!open3);
-   three.querySelector('span').textContent=open3?'Pass & play':'Unlock at Stenographer';
+   three.querySelector('span').textContent=open3?'Pass & play':'Unlock at Dabbler';
  }
  if(four){
    const open4=unlocked>=5;
    four.disabled=!open4;four.classList.toggle('lockedMode',!open4);
-   four.querySelector('span').textContent=open4?'Pass & play':'Unlock at Proofreader';
+   four.querySelector('span').textContent=open4?'Pass & play':'Unlock at Factchecker';
  }
 }
 $('closeMode').onclick=()=>document.body.classList.remove('showMode');
@@ -282,7 +291,7 @@ $('passReady').onclick=()=>{passWait=false;document.body.classList.remove('showP
 function renderRanks(){
  const unlocked=unlockedBotRank();
  if(botRank>unlocked)botRank=unlocked;
- $('rankBtn').textContent=String.fromCharCode(65+botRank);
+ $('rankBtn').innerHTML='<span class="rankLetter">'+String.fromCharCode(65+botRank)+'</span><span class="rankDot">·</span><span class="rankDescriptor">'+BOT_RANKS[botRank].name.toUpperCase()+'</span>';
  refreshModeLocks();
  $('rankList').innerHTML=`<div class="ladderStats"><span>STREAK <strong>${botStreak()}</strong></span><span>BEST <strong>${botBestStreak()}</strong></span></div>`+BOT_RANKS.map((r,i)=>{
    const locked=i>unlocked;
