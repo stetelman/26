@@ -4,6 +4,8 @@ const BOT_HISTORY_KEY='typesetBotRecentGames';
 const BOT_UNLOCK_KEY='typesetUnlockedBotRank';
 const BOT_STREAK_KEY='typesetBotStreak';
 const BOT_BEST_STREAK_KEY='typesetBotBestStreak';
+const BOT_FASTEST_WIN_KEY='typesetBotFastestWin';
+const BOT_HIGHEST_BEAT_KEY='typesetBotHighestBeat';
 const BOT_NAMES=[
  'Apprentice','Bookworm','Copy Clerk','Dabbler','Editor','Factchecker',
  'Grammarian','Headliner','Inker','Journalist','Keysmith','Lexicographer',
@@ -43,6 +45,8 @@ Promise.all([
 function unlockedBotRank(){const n=parseInt(localStorage.getItem(BOT_UNLOCK_KEY)||'0',10);return Math.max(0,Math.min(BOT_RANKS.length-1,isNaN(n)?0:n))}
 function botStreak(){return Math.max(0,parseInt(localStorage.getItem(BOT_STREAK_KEY)||'0',10)||0)}
 function botBestStreak(){return Math.max(0,parseInt(localStorage.getItem(BOT_BEST_STREAK_KEY)||'0',10)||0)}
+function botFastestWin(){const n=parseInt(localStorage.getItem(BOT_FASTEST_WIN_KEY)||'0',10);return n>0?n:0}
+function botHighestBeat(){const n=parseInt(localStorage.getItem(BOT_HIGHEST_BEAT_KEY)||'-1',10);return Math.max(-1,Math.min(BOT_RANKS.length-1,isNaN(n)?-1:n))}
 function reset(){const n=mode==='bot'?2:playerCount;players=Array.from({length:n},()=>({got:new Set()}));turn=0;moveHistory=[];lockUntil=new Map();gameOver=false;typedWord='';passWait=false;document.body.classList.remove('showPass');render()}
 function current(){return players[turn%players.length]}
 function activePlayer(){return turn%players.length}
@@ -198,11 +202,15 @@ function showWinner(i){
  const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);
  let unlockedNext=null;
  let streakNow=botStreak(),bestNow=botBestStreak();
+ let fastestNow=botFastestWin(),newFastest=false,highestBeat=botHighestBeat();
  if(mode==='bot'){
    if(i===0){streakNow++;localStorage.setItem(BOT_STREAK_KEY,String(streakNow));if(streakNow>bestNow){bestNow=streakNow;localStorage.setItem(BOT_BEST_STREAK_KEY,String(bestNow))}}
    else{streakNow=0;localStorage.setItem(BOT_STREAK_KEY,'0')}
  }
  if(mode==='bot'&&i===0){
+   const humanWords=moveHistory.filter(m=>m.player===0).length;
+   if(!fastestNow||humanWords<fastestNow){fastestNow=humanWords;newFastest=true;localStorage.setItem(BOT_FASTEST_WIN_KEY,String(fastestNow))}
+   if(botRank>highestBeat){highestBeat=botRank;localStorage.setItem(BOT_HIGHEST_BEAT_KEY,String(highestBeat))}
    const unlocked=unlockedBotRank();
    if(botRank===unlocked&&unlocked<BOT_RANKS.length-1){
      unlockedNext=unlocked+1;
@@ -234,10 +242,11 @@ function showWinner(i){
  const botBadge=mode==='bot'?`<span class="botBadge badge-${botRank}">${BOT_RANKS[botRank].icon}</span>`:'';
  const unlockText=unlockedNext!==null?`<div class="unlockText"><span>UNLOCKED</span><strong><span class="botBadge badge-${unlockedNext} small">${BOT_RANKS[unlockedNext].icon}</span>${BOT_RANKS[unlockedNext].name.toUpperCase()}</strong></div>`:'';
  const streakText=mode==='bot'?`<div class="streakStrip"><span>STREAK <strong>${streakNow}</strong></span><span>BEST <strong>${bestNow}</strong></span></div>`:'';
+ const recordText=mode==='bot'?'<div class="recordStrip"><span>'+(newFastest?'NEW BEST':'FASTEST')+' <strong>'+(fastestNow?fastestNow+' WORDS':'—')+'</strong></span><span>TOP BOT <strong>'+(highestBeat>=0?String.fromCharCode(65+highestBeat):'—')+'</strong></span></div>':'';
  haptic([40,35,70]);tone(620,.08,.04);setTimeout(()=>tone(820,.1,.04),85);
  const d=document.createElement('div');d.className='winner';
- d.innerHTML=`<div class="winnerBox statsWinner"><div class="sub">${botBadge}${rankLine}</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2>${unlockText}${streakText}<div class="awardList">${awards.map(a=>`<div class="awardCard"><span class="awardIcon">${a.icon}</span><div><span class="awardLabel">${a.label}</span><strong>${a.value}</strong></div></div>`).join('')}</div><div class="winnerActions"><button class="secondaryBtn" data-action="rematch">REMATCH</button>${unlockedNext!==null?`<button class="nextRankBtn" data-action="next">NEXT RANK</button>`:''}</div></div>`;
- d.querySelector('[data-action="rematch"]').onclick=()=>{d.remove();renderRanks();reset()};
+ d.innerHTML=`<div class="winnerBox statsWinner"><div class="sub">${botBadge}${rankLine}</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2>${unlockText}${streakText}${recordText}<div class="awardList">${awards.map(a=>`<div class="awardCard"><span class="awardIcon">${a.icon}</span><div><span class="awardLabel">${a.label}</span><strong>${a.value}</strong></div></div>`).join('')}</div><div class="winnerActions"><button class="secondaryBtn" data-action="rematch">REMATCH</button>${unlockedNext!==null?`<button class="nextRankBtn" data-action="next">PLAY ${String.fromCharCode(65+unlockedNext)} · ${BOT_RANKS[unlockedNext].name.toUpperCase()}</button>`:''}</div></div>`;
+ const rematchBtn=d.querySelector('[data-action="rematch"]');if(rematchBtn){if(mode==='bot'&&i!==0)rematchBtn.textContent='TRY AGAIN';rematchBtn.onclick=()=>{d.remove();renderRanks();reset()}};
  const next=d.querySelector('[data-action="next"]');if(next)next.onclick=()=>{botRank=unlockedNext;d.remove();renderRanks();reset()};
  document.body.appendChild(d)
 }
@@ -293,7 +302,8 @@ function renderRanks(){
  if(botRank>unlocked)botRank=unlocked;
  $('rankBtn').innerHTML='<span class="rankLetter">'+String.fromCharCode(65+botRank)+'</span><span class="rankDot">·</span><span class="rankDescriptor">'+BOT_RANKS[botRank].name.toUpperCase()+'</span>';
  refreshModeLocks();
- $('ladderStats').innerHTML='<span>STREAK <strong>'+botStreak()+'</strong></span><span>BEST <strong>'+botBestStreak()+'</strong></span>';
+ const top=botHighestBeat(),fast=botFastestWin();
+ $('ladderStats').innerHTML='<span>STREAK <strong>'+botStreak()+'</strong></span><span>TOP <strong>'+(top>=0?String.fromCharCode(65+top):'—')+'</strong></span><span>FAST <strong>'+(fast?fast+'W':'—')+'</strong></span>';
  const unlockedCount=unlocked+1;
  const progressPct=Math.round(unlockedCount/BOT_RANKS.length*100);
  $('ladderProgress').innerHTML='<div class="ladderProgressTop"><span>BOT PROGRESS</span><strong>'+unlockedCount+' / '+BOT_RANKS.length+' · '+progressPct+'%</strong></div><div class="ladderProgressBar"><i style="width:'+progressPct+'%"></i></div>';
