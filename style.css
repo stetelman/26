@@ -1317,3 +1317,15 @@ header .brandBlock>.sub{display:none!important}
 
 #wordDisplay:before,
 #wordDisplay:after{content:none!important}
+
+/* Center tutorial block; justify rule lines */
+.tutorialStage{
+  align-items:center!important;
+  text-align:center!important;
+}
+.tutorialLine{
+  width:min(92%,340px)!important;
+  max-width:340px!important;
+  text-align:justify!important;
+  text-align-last:justify!important;
+}
