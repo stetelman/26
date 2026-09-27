@@ -469,3 +469,73 @@ header h1{color:#25231f}
     font-size:6px;
   }
 }
+
+/* Header controls as keyboard keycaps */
+.headerBtns{
+  gap:5px;
+}
+.headerBtns .ghost,
+.rankBtn{
+  background:#fffdf8;
+  color:var(--text);
+  border:1px solid #cec7bb;
+  border-radius:7px;
+  box-shadow:0 2px 0 #cfc8bc;
+  font-weight:900;
+  letter-spacing:.035em;
+  text-transform:uppercase;
+  transition:transform .06s ease, box-shadow .06s ease, background .12s ease;
+}
+.headerBtns .ghost:active,
+.rankBtn:active{
+  transform:translateY(2px);
+  box-shadow:0 0 0 #cfc8bc;
+}
+.headerBtns .ghost:hover,
+.rankBtn:hover{
+  background:#f5f1e8;
+}
+#rulesBtn{
+  width:30px;
+  min-width:30px;
+  padding:0;
+  font-size:12px;
+}
+#newGame{
+  padding-left:9px;
+  padding-right:9px;
+}
+#modeBtn{
+  min-width:62px;
+}
+.rankBtn{
+  min-width:76px;
+}
+.rankBtn .botBadge.tiny{
+  background:#eee8dd;
+  border-color:#cfc8bc;
+  border-radius:4px;
+  box-shadow:inset 0 -1px 0 #d8d1c5;
+}
+@media(max-width:600px){
+  .headerBtns{
+    gap:4px;
+  }
+  .headerBtns .ghost,
+  .rankBtn{
+    height:27px;
+    min-height:27px;
+    border-radius:6px;
+    box-shadow:0 2px 0 #cfc8bc;
+    font-size:7.5px;
+    letter-spacing:.025em;
+  }
+  #rulesBtn{
+    width:27px;
+    min-width:27px;
+    font-size:11px;
+  }
+  #modeBtn{min-width:54px}
+  #newGame{padding-left:6px;padding-right:6px}
+  .rankBtn{min-width:68px}
+}
