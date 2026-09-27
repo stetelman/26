@@ -100,8 +100,19 @@ function botMove(){
  commit(pick.w,'bot');
 }
 function winChance(){
- const lock=lockedLetters();const scores=players.map((p,i)=>p.got.size-[...lock].filter(l=>!p.got.has(l)).length*.22+(i===turn%2?.25:0));
- const p1=1/(1+Math.exp(-(scores[0]-scores[1])/3.4));const a=Math.round(p1*100);return[a,100-a]
+ if(!moveHistory.length)return[50,50];
+ const lock=lockedLetters(),active=activePlayer();
+ const scores=players.map((p,i)=>{
+   let score=p.got.size;
+   if(i===active){
+     const blockedNeeded=[...lock].filter(ch=>!p.got.has(ch)).length;
+     score-=blockedNeeded*.55;
+   }
+   return score;
+ });
+ const p1=1/(1+Math.exp(-(scores[0]-scores[1])/3.8));
+ const a=Math.max(1,Math.min(99,Math.round(p1*100)));
+ return[a,100-a]
 }
 function render(){renderUI();renderWords()}
 function renderWords(){
