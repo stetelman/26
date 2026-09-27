@@ -134,3 +134,18 @@ header h1{color:#25231f}
 .rankHint{font-size:10px;color:var(--muted);margin:12px 0 0}
 .unlockText{padding:8px 10px;border-radius:8px;background:#e8edf5;border:1px solid #c9d2e1}
 @media(max-width:600px){.headerBtns{flex-wrap:wrap;justify-content:flex-end}.rankBtn{min-width:72px;padding-left:7px;padding-right:7px}}
+
+.statsWinner{width:min(430px,92vw)}
+.statsWinner h2{margin-bottom:12px}
+.statsGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.statsGrid>div{background:#fffdf8;border:1px solid var(--line);border-radius:9px;padding:10px}
+.statsGrid span,.endNeed span,.unlockText span{display:block;font-size:8px;font-weight:900;letter-spacing:.09em;color:var(--muted);margin-bottom:4px}
+.statsGrid strong{font-size:19px}
+.endNeed{background:#f1ede5;border:1px solid var(--line);border-radius:9px;padding:9px 10px;text-align:left}
+.endNeed strong{font-size:11px;letter-spacing:.08em}
+.unlockText{margin:8px 0;background:#e8edf5;border:1px solid #c9d2e1;border-radius:9px;padding:9px 10px;text-align:left}
+.unlockText strong{font-size:13px}
+.winnerActions{display:flex;gap:8px;margin-top:12px}
+.winnerActions button{flex:1}
+.secondaryBtn{background:#fffdf8!important;color:var(--text)!important;border:1px solid var(--line)!important}
+.nextRankBtn{background:var(--accent)!important;color:#fff!important;border:1px solid var(--accent)!important}
