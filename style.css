@@ -23,3 +23,12 @@ html,body,.app,.turnPanel,.wordEntry,.wordDisplay,.inlineDelete,.keyboard,.key{
   -webkit-tap-highlight-color:transparent;
 }
 .inlineDelete,.key,.ghost{user-select:none;-webkit-user-select:none}
+
+.needLine{font-size:7px;color:var(--muted);margin-top:4px;line-height:1.25;min-height:18px}
+.needLine span{color:#c8cdd3;font-weight:700;letter-spacing:.03em}
+.p2 .needLine{text-align:right}
+.key small{position:absolute;right:3px;top:2px;font-size:7px;line-height:1;color:#d7e1f2}
+.rulesModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:20;align-items:center;justify-content:center;padding:20px}
+.showRules .rulesModal{display:flex}.rulesCard{position:relative;max-width:390px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;color:var(--text)}
+.rulesCard h2{font-size:30px;margin:5px 0 14px}.rulesCard p{font-size:14px;line-height:1.45;color:#d5d9df}.rulesClose{position:absolute;right:10px;top:8px;border:0;background:transparent;color:var(--text);font-size:28px}
+@media(max-width:600px){.needLine{font-size:6px;margin-top:2px;min-height:13px}.key small{font-size:6px}}
