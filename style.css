@@ -1168,3 +1168,19 @@ header{
 .ladderProgress{
   margin-bottom:7px!important;
 }
+
+/* Main screen copy reduction */
+header .brandBlock>.sub{display:none!important}
+.turnLine{display:none!important}
+.legend{display:none!important}
+.vs{
+  min-width:10px!important;
+  font-size:0!important;
+}
+.needLine:empty{display:none!important}
+.needLine{
+  margin-top:4px!important;
+  font-size:7px!important;
+  letter-spacing:.07em!important;
+}
+.directEntry{padding-top:7px!important}
