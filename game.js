@@ -1,6 +1,18 @@
 const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 let dict=new Set(), allWords=[], commonWords=[], openingWords=[], commonWordSet=new Set(), players=[], playerCount=2, turn=0, moveHistory=[], lockUntil=new Map(), gameOver=false, mode='bot', typedWord='', passWait=false;
 const BOT_HISTORY_KEY='typesetBotRecentGames';
+const BOT_UNLOCK_KEY='typesetUnlockedBotRank';
+const BOT_RANKS=[
+ {name:'Dabbler',sample:140,shortlist:28,pick:18,noise:4.2,defense:.25},
+ {name:'Typist',sample:220,shortlist:24,pick:14,noise:3.2,defense:.45},
+ {name:'Copy Clerk',sample:320,shortlist:20,pick:11,noise:2.4,defense:.7},
+ {name:'Stenographer',sample:440,shortlist:16,pick:8,noise:1.7,defense:.95},
+ {name:'Typesetter',sample:600,shortlist:12,pick:6,noise:1.2,defense:1.2},
+ {name:'Proofreader',sample:760,shortlist:10,pick:4,noise:.8,defense:1.4},
+ {name:'Court Reporter',sample:950,shortlist:8,pick:3,noise:.5,defense:1.6},
+ {name:'Wordsmith',sample:1200,shortlist:6,pick:2,noise:.25,defense:1.8}
+];
+let botRank=0;
 const $=id=>document.getElementById(id);
 
 Promise.all([
@@ -17,6 +29,7 @@ Promise.all([
  commonWords=['CAT','DOG','SIX','WORD','GAME','QUIZ','WATER','LETTER','CROSS','ZEBRA','JUMP','VEX','QUICK'];allWords=[...commonWords];openingWords=[...commonWords];commonWordSet=new Set(commonWords);dict=new Set(commonWords);reset();msg('Dictionary fallback loaded.');
 });
 
+function unlockedBotRank(){const n=parseInt(localStorage.getItem(BOT_UNLOCK_KEY)||'0',10);return Math.max(0,Math.min(BOT_RANKS.length-1,isNaN(n)?0:n))}
 function reset(){const n=mode==='bot'?2:playerCount;players=Array.from({length:n},()=>({got:new Set()}));turn=0;moveHistory=[];lockUntil=new Map();gameOver=false;typedWord='';passWait=false;document.body.classList.remove('showPass');render()}
 function current(){return players[turn%players.length]}
 function activePlayer(){return turn%players.length}
@@ -56,22 +69,25 @@ function saveBotGameWords(words){
 function recentBotWords(){return new Set(getBotHistory().flat())}
 function botMove(){
  if(gameOver||mode!=='bot'||activePlayer()!==1)return;
- const recent=recentBotWords(),usedThisGame=new Set(moveHistory.map(m=>m.word));
+ const rank=BOT_RANKS[botRank],recent=recentBotWords(),usedThisGame=new Set(moveHistory.map(m=>m.word));
  const candidates=[];
- let pool;
- if(turn===1){const shuffled=[...openingWords];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}pool=shuffled.slice(0,320)}else pool=commonWords.slice(0,5000);
+ const source=turn===1?openingWords:commonWords.slice(0,5000);
+ const shuffled=[...source];
+ for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
+ const pool=shuffled.slice(0,Math.min(rank.sample,shuffled.length));
+ const opp=players[0],oppNeed=new Set(ALPHA.filter(ch=>!opp.got.has(ch)));
  for(const w of pool){
    if(recent.has(w)||usedThisGame.has(w))continue;
-   const gain=gainedBy(w,current());let rare=0;for(const ch of gain)rare+=({Q:3,Z:2.6,X:2.3,J:2.2,K:1.4,V:1.3}[ch]||1);
-   const style=Math.floor(Math.random()*4);
-   const lockImpact=[...new Set(w)].filter(ch=>!current().got.has(ch)).length;
-   const commonBoost=commonWordSet.has(w)?1.8:0;
-   const score=gain.length*(style===0?7:style===1?5.5:6)+rare*(style===2?1.8:1)+(style===3?lockImpact*1.2:0)+w.length*.15+commonBoost+Math.random()*(turn===1?3.5:.9);
+   const unique=[...new Set(w)],gain=gainedBy(w,current());let rare=0;
+   for(const ch of gain)rare+=({Q:3,Z:2.6,X:2.3,J:2.2,K:1.4,V:1.3}[ch]||1);
+   const blockValue=unique.filter(ch=>oppNeed.has(ch)).length;
+   const commonBoost=commonWordSet.has(w)?1.6:0;
+   const score=gain.length*6.2+rare*.95+blockValue*rank.defense+w.length*.12+commonBoost+Math.random()*rank.noise;
    candidates.push({w,score});
  }
  candidates.sort((a,b)=>b.score-a.score);
- const top=candidates.slice(0,32);
- const pick=top.length?top[Math.floor(Math.random()*Math.min(turn<4?18:12,top.length))]:null;
+ const top=candidates.slice(0,rank.shortlist);
+ const pick=top.length?top[Math.floor(Math.random()*Math.min(rank.pick,top.length))]:null;
  if(!pick){msg('Bot passes.');turn++;render();return}
  commit(pick.w,'bot');
 }
@@ -112,7 +128,7 @@ function renderUI(){
    const ch=winChance();
    meter.innerHTML=players.map((p,i)=>{
      const need=ALPHA.filter(l=>!p.got.has(l)).join(' ');
-     return `<div class="player ${i===1?'p2':''}"><div class="label">PLAYER ${i+1} <span>${p.got.size}/26</span></div><div class="bar"><i style="width:${p.got.size/26*100}%"></i></div><div class="chance">${ch[i]}%</div><div class="needLine">NEED <span>${need||'COMPLETE'}</span></div></div>${i===0?'<div class="vs">WIN CHANCE</div>':''}`;
+     const label=mode==='bot'?(i===0?'YOU':BOT_RANKS[botRank].name.toUpperCase()):'PLAYER '+(i+1); return `<div class="player ${i===1?'p2':''}"><div class="label">${label} <span>${p.got.size}/26</span></div><div class="bar"><i style="width:${p.got.size/26*100}%"></i></div><div class="chance">${ch[i]}%</div><div class="needLine">NEED <span>${need||'COMPLETE'}</span></div></div>${i===0?'<div class="vs">WIN CHANCE</div>':''}`;
    }).join('');
  }else{
    meter.innerHTML=players.map((p,i)=>{
@@ -120,7 +136,7 @@ function renderUI(){
      return `<div class="player multiPlayerCard ${i===activePlayer()?'active':''}"><div class="label">PLAYER ${i+1} <span>${p.got.size}/26</span></div><div class="bar"><i style="width:${p.got.size/26*100}%"></i></div><div class="needLine">NEED <span>${need||'COMPLETE'}</span></div></div>`;
    }).join('');
  }
- $('turnName').textContent='PLAYER '+(activePlayer()+1);
+ $('turnName').textContent=mode==='bot'?(activePlayer()===0?'YOU':BOT_RANKS[botRank].name.toUpperCase()):'PLAYER '+(activePlayer()+1);
  const blocked=gameOver||passWait||(mode==='bot'&&activePlayer()===1);
  $('status').textContent=blocked?(mode==='bot'?'Bot turn':'Pass device'):'Your turn';
  const display=$('wordDisplay');display.innerHTML=(typedWord?typedWord:'TYPE A WORD')+'<span class="cursor">|</span>';display.classList.toggle('empty',!typedWord);
@@ -137,7 +153,21 @@ function renderUI(){
 }
 function del(){if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
 function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Only the previous word is locked. Locked letters may be used but do not score.'},2200)}
-function showWinner(i){const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
+function showWinner(i){
+ const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);
+ let unlockText='';
+ if(mode==='bot'&&i===0){
+   const unlocked=unlockedBotRank();
+   if(botRank===unlocked&&unlocked<BOT_RANKS.length-1){
+     localStorage.setItem(BOT_UNLOCK_KEY,String(unlocked+1));
+     unlockText=`<p class="unlockText">UNLOCKED: <strong>${BOT_RANKS[unlocked+1].name.toUpperCase()}</strong></p>`;
+   }
+ }
+ const winnerName=mode==='bot'?(i===0?'YOU':BOT_RANKS[botRank].name.toUpperCase()):'PLAYER '+(i+1);
+ const d=document.createElement('div');d.className='winner';
+ d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2><p>First to use all 26 letters.</p>${unlockText}<button>PLAY AGAIN</button></div>`;
+ d.querySelector('button').onclick=()=>{d.remove();renderRanks();reset()};document.body.appendChild(d)
+}
 $('newGame').onclick=reset;
 $('inlineDelete').onclick=del;
 $('inlinePlay').onclick=play;
@@ -146,6 +176,7 @@ $('modeBtn').onclick=()=>{
  else if(playerCount<4)playerCount++;
  else{mode='bot';playerCount=2}
  $('modeBtn').textContent=mode==='bot'?'VS BOT':playerCount+' PLAYERS';
+ $('rankBtn').style.display=mode==='bot'?'inline-flex':'none';
  reset()
 };
 document.addEventListener('keydown',e=>{if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter')play()});
@@ -160,3 +191,18 @@ function showPass(){
  document.body.classList.add('showPass');
 }
 $('passReady').onclick=()=>{passWait=false;document.body.classList.remove('showPass');render()};
+
+function renderRanks(){
+ const unlocked=unlockedBotRank();
+ if(botRank>unlocked)botRank=unlocked;
+ $('rankBtn').textContent=BOT_RANKS[botRank].name.toUpperCase();
+ $('rankList').innerHTML=BOT_RANKS.map((r,i)=>{
+   const locked=i>unlocked;
+   return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''}><span class="rankNumber">${i+1}</span><span class="rankName">${r.name}</span><span class="rankState">${locked?'LOCKED':i===botRank?'SELECTED':'PLAY'}</span></button>`;
+ }).join('');
+ [...document.querySelectorAll('.rankOption:not([disabled])')].forEach(b=>b.onclick=()=>{botRank=+b.dataset.rank;document.body.classList.remove('showRanks');renderRanks();reset()});
+}
+$('rankBtn').onclick=()=>{renderRanks();document.body.classList.add('showRanks')};
+$('closeRanks').onclick=()=>document.body.classList.remove('showRanks');
+$('rankModal').onclick=e=>{if(e.target.id==='rankModal')document.body.classList.remove('showRanks')};
+renderRanks();
