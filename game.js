@@ -161,8 +161,8 @@ function renderUI(){
    const ch=winChance();
    meter.innerHTML=players.map((p,i)=>{
      const missing=ALPHA.filter(l=>!p.got.has(l));
-     const need=missing.length>10?missing.length:missing.join(' ');
-     const label=mode==='bot'?(i===0?'YOU':BOT_RANKS[botRank].name.toUpperCase()):'PLAYER '+(i+1); return `<div class="player ${i===1?'p2':''}"><div class="label">${label} <span>${p.got.size}/26</span></div><div class="bar"><i style="width:${p.got.size/26*100}%"></i></div><div class="chance">${ch[i]}%</div><div class="needLine">NEED <span>${missing.length?need:'COMPLETE'}</span></div></div>${i===0?'<div class="vs">WIN CHANCE</div>':''}`;
+     const need=missing.length>10?'':missing.join(' ');
+     const label=mode==='bot'?(i===0?'YOU':BOT_RANKS[botRank].name.toUpperCase()):'PLAYER '+(i+1); return `<div class="player ${i===1?'p2':''}"><div class="label">${label} <span>${p.got.size}/26</span></div><div class="bar"><i style="width:${p.got.size/26*100}%"></i></div><div class="chance">${ch[i]}%</div><div class="needLine">${missing.length&&need?'<span>'+need+'</span>':missing.length?'':'<span>COMPLETE</span>'}</div></div>${i===0?'<div class="vs"></div>':''}`;
    }).join('');
  }else{
    meter.innerHTML=players.map((p,i)=>{
