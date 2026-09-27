@@ -1314,3 +1314,6 @@ header .brandBlock>.sub{display:none!important}
 .startStage{display:none!important}
 
 .startStage,.tutorialStart{display:none!important}
+
+#wordDisplay:before,
+#wordDisplay:after{content:none!important}
