@@ -1,5 +1,5 @@
 const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-let dict=new Set(), allWords=[], commonWords=[], openingWords=[], commonWordSet=new Set(), players=[], turn=0, moveHistory=[], lockUntil=new Map(), gameOver=false, mode='bot', typedWord='', passWait=false;
+let dict=new Set(), allWords=[], commonWords=[], openingWords=[], commonWordSet=new Set(), players=[], playerCount=2, turn=0, moveHistory=[], lockUntil=new Map(), gameOver=false, mode='bot', typedWord='', passWait=false;
 const BOT_HISTORY_KEY='typesetBotRecentGames';
 const $=id=>document.getElementById(id);
 
@@ -17,8 +17,9 @@ Promise.all([
  commonWords=['CAT','DOG','SIX','WORD','GAME','QUIZ','WATER','LETTER','CROSS','ZEBRA','JUMP','VEX','QUICK'];allWords=[...commonWords];openingWords=[...commonWords];commonWordSet=new Set(commonWords);dict=new Set(commonWords);reset();msg('Dictionary fallback loaded.');
 });
 
-function reset(){players=[{got:new Set()},{got:new Set()}];turn=0;moveHistory=[];lockUntil=new Map();gameOver=false;typedWord='';passWait=false;document.body.classList.remove('showPass');render()}
-function current(){return players[turn%2]}
+function reset(){const n=mode==='bot'?2:playerCount;players=Array.from({length:n},()=>({got:new Set()}));turn=0;moveHistory=[];lockUntil=new Map();gameOver=false;typedWord='';passWait=false;document.body.classList.remove('showPass');render()}
+function current(){return players[turn%players.length]}
+function activePlayer(){return turn%players.length}
 function lockedLetters(){const s=new Set();for(const [ch,until] of lockUntil)if(turn<until)s.add(ch);return s}
 function gainedBy(word,p=current()){const lock=lockedLetters();return [...new Set(word)].filter(ch=>!p.got.has(ch)&&!lock.has(ch))}
 function legalWord(word){
@@ -28,13 +29,13 @@ function legalWord(word){
  return {ok:true};
 }
 function play(){
- if(gameOver||(mode==='bot'&&turn%2===1))return;
+ if(gameOver||(mode==='bot'&&activePlayer()===1))return;
  const word=typedWord.toUpperCase().replace(/[^A-Z]/g,'');
  const check=legalWord(word);if(!check.ok){msg(check.msg);return}
  commit(word,'human');
 }
 function commit(word,source){
- const actor=turn%2;const lock=lockedLetters();const gained=gainedBy(word,current());
+ const actor=activePlayer();const lock=lockedLetters();const gained=gainedBy(word,current());
  for(const ch of gained)current().got.add(ch);
  for(const ch of new Set(word))if(!lock.has(ch))lockUntil.set(ch,turn+2);
  moveHistory.push({player:actor,word,gained,source});
@@ -43,7 +44,7 @@ function commit(word,source){
  turn++;
  if(mode==='local'){passWait=true;render();showPass();return}
  render();
- if(mode==='bot'&&turn%2===1&&!gameOver){msg('Bot is thinking…');setTimeout(botMove,160)}
+ if(mode==='bot'&&activePlayer()===1&&!gameOver){msg('Bot is thinking…');setTimeout(botMove,160)}
 }
 function getBotHistory(){try{return JSON.parse(localStorage.getItem(BOT_HISTORY_KEY)||'[]')}catch{return []}}
 function saveBotGameWords(words){
@@ -54,7 +55,7 @@ function saveBotGameWords(words){
 }
 function recentBotWords(){return new Set(getBotHistory().flat())}
 function botMove(){
- if(gameOver||mode!=='bot'||turn%2!==1)return;
+ if(gameOver||mode!=='bot'||activePlayer()!==1)return;
  const recent=recentBotWords(),usedThisGame=new Set(moveHistory.map(m=>m.word));
  const candidates=[];
  let pool;
@@ -80,30 +81,48 @@ function winChance(){
 }
 function render(){renderUI();renderWords()}
 function renderWords(){
- const el=$('wordStream');if(!moveHistory.length){el.innerHTML='<div class="emptyStage">PLAY A WORD</div>';return}
- const lock=lockedLetters(),recent=moveHistory.slice(-8);
- const lanes=[0,1].map(player=>{
-   const words=recent.filter(m=>m.player===player);
-   return `<div class="wordLane p${player+1}Lane"><div class="laneLabel">PLAYER ${player+1}</div><div class="laneWords">${words.map((m,i)=>{
-     const age=words.length-1-i;
-     const cls=age===0?'current':age===1?'prev1':age===2?'prev2':'older';
-     const isNewest=m===moveHistory[moveHistory.length-1];
-     const letters=[...m.word].map((ch,j)=>`<span class="${lock.has(ch)?'lockedChar ':''}${isNewest?'typedChar':''}"${isNewest?` style="animation-delay:${j*70}ms"`:''}>${ch}</span>`).join('');
-     return `<div class="playedWord ${cls}">${letters}</div>`;
-   }).join('')||'<div class="laneEmpty">—</div>'}</div></div>`;
- }).join('<div class="laneDivider"></div>');
- el.innerHTML=lanes;
+ const el=$('wordStream');if(!moveHistory.length){el.className='wordStream';el.innerHTML='<div class="emptyStage">PLAY A WORD</div>';return}
+ const lock=lockedLetters(),recent=moveHistory.slice(-10);
+ if(players.length<=2){
+   el.className='wordStream';
+   const lanes=[0,1].map(player=>{
+     const words=recent.filter(m=>m.player===player);
+     return `<div class="wordLane p${player+1}Lane"><div class="laneLabel">PLAYER ${player+1}</div><div class="laneWords">${words.map((m,i)=>{
+       const age=words.length-1-i;
+       const cls=age===0?'current':age===1?'prev1':age===2?'prev2':'older';
+       const isNewest=m===moveHistory[moveHistory.length-1];
+       const letters=[...m.word].map((ch,j)=>`<span class="${lock.has(ch)?'lockedChar ':''}${isNewest?'typedChar':''}"${isNewest?` style="animation-delay:${j*70}ms"`:''}>${ch}</span>`).join('');
+       return `<div class="playedWord ${cls}">${letters}</div>`;
+     }).join('')||'<div class="laneEmpty">—</div>'}</div></div>`;
+   }).join('<div class="laneDivider"></div>');
+   el.innerHTML=lanes;return;
+ }
+ el.className='wordStream multiStream';
+ el.innerHTML=recent.map((m,i)=>{
+   const isNewest=i===recent.length-1;
+   const letters=[...m.word].map((ch,j)=>`<span class="${lock.has(ch)?'lockedChar ':''}${isNewest?'typedChar':''}"${isNewest?` style="animation-delay:${j*70}ms"`:''}>${ch}</span>`).join('');
+   return `<div class="multiMove ${isNewest?'current':''}"><span class="multiPlayer">P${m.player+1}</span><span class="multiWord">${letters}</span></div>`;
+ }).join('');
 }
 function renderUI(){
- const me=current(),lock=lockedLetters(),ch=winChance();
- $('p1count').textContent=players[0].got.size+'/26';$('p2count').textContent=players[1].got.size+'/26';
- const need0=ALPHA.filter(l=>!players[0].got.has(l)).join(' '),need1=ALPHA.filter(l=>!players[1].got.has(l)).join(' ');
- if($('p1need'))$('p1need').textContent=need0||'COMPLETE';if($('p2need'))$('p2need').textContent=need1||'COMPLETE';
- $('p1bar').style.width=(players[0].got.size/26*100)+'%';$('p2bar').style.width=(players[1].got.size/26*100)+'%';
- $('p1chance').textContent=ch[0]+'%';$('p2chance').textContent=ch[1]+'%';
- $('turnName').textContent='PLAYER '+(turn%2+1);
- const blocked=gameOver||passWait||(mode==='bot'&&turn%2===1);
- $('status').textContent=blocked?'Bot turn':'Your turn';
+ const me=current(),lock=lockedLetters();
+ const meter=$('meter');
+ meter.className='meter'+(players.length>2?' multi':'');
+ if(players.length===2){
+   const ch=winChance();
+   meter.innerHTML=players.map((p,i)=>{
+     const need=ALPHA.filter(l=>!p.got.has(l)).join(' ');
+     return `<div class="player ${i===1?'p2':''}"><div class="label">PLAYER ${i+1} <span>${p.got.size}/26</span></div><div class="bar"><i style="width:${p.got.size/26*100}%"></i></div><div class="chance">${ch[i]}%</div><div class="needLine">NEED <span>${need||'COMPLETE'}</span></div></div>${i===0?'<div class="vs">WIN CHANCE</div>':''}`;
+   }).join('');
+ }else{
+   meter.innerHTML=players.map((p,i)=>{
+     const need=ALPHA.filter(l=>!p.got.has(l)).join(' ');
+     return `<div class="player multiPlayerCard ${i===activePlayer()?'active':''}"><div class="label">PLAYER ${i+1} <span>${p.got.size}/26</span></div><div class="bar"><i style="width:${p.got.size/26*100}%"></i></div><div class="needLine">NEED <span>${need||'COMPLETE'}</span></div></div>`;
+   }).join('');
+ }
+ $('turnName').textContent='PLAYER '+(activePlayer()+1);
+ const blocked=gameOver||passWait||(mode==='bot'&&activePlayer()===1);
+ $('status').textContent=blocked?(mode==='bot'?'Bot turn':'Pass device'):'Your turn';
  const display=$('wordDisplay');display.innerHTML=(typedWord?typedWord:'TYPE A WORD')+'<span class="cursor">|</span>';display.classList.toggle('empty',!typedWord);
  const kb=$('keyboard');kb.innerHTML='';
  for(const row of ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM']){
@@ -120,13 +139,19 @@ function renderUI(){
  const enter=document.createElement('div');enter.className='key action playKey'+(blocked?' disabled':'');enter.textContent='PLAY';if(!blocked)enter.onclick=play;
  actions.append(back,enter);kb.appendChild(actions)
 }
-function del(){if(gameOver||passWait||(mode==='bot'&&turn%2===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
+function del(){if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;typedWord=typedWord.slice(0,-1);renderUI()}
 function msg(t){$('help').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('help').textContent='Only the previous word is locked. Locked letters may be used but do not score.'},2200)}
 function showWinner(i){const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);const d=document.createElement('div');d.className='winner';d.innerHTML=`<div class="winnerBox"><div class="sub">ALPHABET COMPLETE</div><h2>PLAYER ${i+1} WINS</h2><p>First to use all 26 letters.</p><button>PLAY AGAIN</button></div>`;d.querySelector('button').onclick=()=>{d.remove();reset()};document.body.appendChild(d)}
 $('newGame').onclick=reset;
 $('inlineDelete').onclick=del;
-$('modeBtn').onclick=()=>{mode=mode==='bot'?'local':'bot';$('modeBtn').textContent=mode==='bot'?'VS BOT':'PASS & PLAY';reset()};
-document.addEventListener('keydown',e=>{if(gameOver||passWait||(mode==='bot'&&turn%2===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter')play()});
+$('modeBtn').onclick=()=>{
+ if(mode==='bot'){mode='local';playerCount=2}
+ else if(playerCount<4)playerCount++;
+ else{mode='bot';playerCount=2}
+ $('modeBtn').textContent=mode==='bot'?'VS BOT':playerCount+' PLAYERS';
+ reset()
+};
+document.addEventListener('keydown',e=>{if(gameOver||passWait||(mode==='bot'&&activePlayer()===1))return;if(/^[a-z]$/i.test(e.key)&&typedWord.length<7){typedWord+=e.key.toUpperCase();renderUI()}else if(e.key==='Backspace')del();else if(e.key==='Enter')play()});
 
 $('rulesBtn').onclick=()=>document.body.classList.add('showRules');
 $('closeRules').onclick=()=>document.body.classList.remove('showRules');
@@ -134,7 +159,7 @@ $('rulesModal').onclick=e=>{if(e.target.id==='rulesModal')document.body.classLis
 
 function showPass(){
  if(mode!=='local'||gameOver)return;
- $('passPlayer').textContent='PLAYER '+(turn%2+1);
+ $('passPlayer').textContent='PLAYER '+(activePlayer()+1);
  document.body.classList.add('showPass');
 }
 $('passReady').onclick=()=>{passWait=false;document.body.classList.remove('showPass');render()};
