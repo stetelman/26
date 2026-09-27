@@ -48,3 +48,8 @@ html,body,.app,.turnPanel,.wordEntry,.wordDisplay,.inlineDelete,.keyboard,.key{
   .directWord{font-size:20px}
   .directWord.empty{font-size:10px}
 }
+
+.passModal{display:none;position:fixed;inset:0;background:rgba(13,16,20,.96);z-index:25;align-items:center;justify-content:center;padding:20px}
+.showPass .passModal{display:flex}
+.passCard{width:min(360px,90vw);text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 22px}
+.passCard h2{font-size:28px;margin:8px 0}.passCard p{color:var(--muted);font-size:13px}.passCard button{margin-top:14px;border:0;border-radius:10px;padding:12px 22px;background:var(--accent);color:#0b1220;font-weight:900}
