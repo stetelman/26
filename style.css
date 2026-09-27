@@ -109,3 +109,12 @@ header h1{color:#25231f}
  .ruleItem{grid-template-columns:40px 1fr;padding:8px}
  .ruleKey{width:36px;height:36px}
 }
+
+.keyboard{max-width:680px}
+.row{gap:7px;margin:7px 0}
+.key{width:9.35%;max-width:61px;min-width:32px;height:48px;border-radius:8px;font-size:15px}
+@media(max-width:600px){
+  .keyboard{max-width:100%}
+  .row{gap:4px;margin:5px 0}
+  .key{width:9.45%;min-width:0;max-width:none;height:46px;font-size:14px}
+}
