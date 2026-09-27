@@ -97,7 +97,7 @@ function renderUI(){
  $('turnName').textContent='PLAYER '+(turn%2+1);
  const blocked=gameOver||(mode==='bot'&&turn%2===1);
  $('status').textContent=blocked?'Bot turn':'Your turn';
- const display=$('wordDisplay');display.textContent=typedWord||'TYPE A WORD';display.classList.toggle('empty',!typedWord);
+ const display=$('wordDisplay');display.innerHTML=(typedWord?typedWord:'TYPE A WORD')+'<span class="cursor">|</span>';display.classList.toggle('empty',!typedWord);
  const kb=$('keyboard');kb.innerHTML='';
  for(const row of ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM']){
    const r=document.createElement('div');r.className='row';
