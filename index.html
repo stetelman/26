@@ -5,13 +5,13 @@
 <div class="app">
 <header>
   <div><h1>TYPESET</h1><div class="sub">Press all the keys to win.</div></div>
-  <div class="headerBtns"><button id="modeBtn" class="ghost">VS BOT</button><button id="newGame" class="ghost">New game</button></div>
+  <div class="headerBtns"><button id="rulesBtn" class="ghost">?</button><button id="modeBtn" class="ghost">VS BOT</button><button id="newGame" class="ghost">New game</button></div>
 </header>
 
 <section class="meter">
-  <div class="player"><div class="label">PLAYER 1 <span id="p1count">0/26</span></div><div class="bar"><i id="p1bar"></i></div><div class="chance" id="p1chance">50%</div></div>
+  <div class="player"><div class="label">PLAYER 1 <span id="p1count">0/26</span></div><div class="bar"><i id="p1bar"></i></div><div class="chance" id="p1chance">50%</div><div class="needLine">NEED <span id="p1need">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span></div></div>
   <div class="vs">WIN CHANCE</div>
-  <div class="player p2"><div class="label">PLAYER 2 <span id="p2count">0/26</span></div><div class="bar"><i id="p2bar"></i></div><div class="chance" id="p2chance">50%</div></div>
+  <div class="player p2"><div class="label">PLAYER 2 <span id="p2count">0/26</span></div><div class="bar"><i id="p2bar"></i></div><div class="chance" id="p2chance">50%</div><div class="needLine">NEED <span id="p2need">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span></div></div>
 </section>
 
 <section class="wordStage">
@@ -21,7 +21,7 @@
 <section class="turnPanel">
   <div class="turnLine"><span id="turnName">PLAYER 1</span><span id="status">Type a word</span></div>
   <div class="wordEntry"><div id="wordDisplay" class="wordDisplay empty">TYPE A WORD</div><button id="inlineDelete" class="inlineDelete" aria-label="Delete last letter">⌫</button></div>
-  <div class="help" id="help">Use a 3–7 letter word. Locked letters may be used but do not score; using one while locked does not refresh it.</div>
+  <div class="help" id="help">Use a 3–7 letter word. Only the previous word is locked; locked letters may be used but do not score.</div>
 </section>
 
 <section class="keyboardSection">
@@ -29,5 +29,6 @@
   <div class="legend"><span><b class="need"></b>needed</span><span><b class="lockedNeed"></b>needed + locked</span><span><b class="earned"></b>earned</span><span><b class="locked"></b>earned + locked</span></div>
 </section>
 </div>
+<div id="rulesModal" class="rulesModal"><div class="rulesCard"><button id="closeRules" class="rulesClose">×</button><div class="sub">HOW TO PLAY</div><h2>TYPESET</h2><p>Play a valid 3–7 letter word.</p><p>Every new letter you use fills that key for you.</p><p>Letters in the immediately previous word are locked for one turn. You may still use them, but they do not score.</p><p>No word may be repeated during the same game.</p><p><strong>First player to collect A–Z wins.</strong></p></div></div>
 <script src="game.js"></script>
 </body></html>
