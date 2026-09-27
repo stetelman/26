@@ -203,7 +203,7 @@ function showWinner(i){
  const rankLine=mode==='bot'?BOT_RANKS[botRank].name.toUpperCase():'PASS & PLAY';
  const botBadge=mode==='bot'?`<span class="botBadge badge-${botRank}">${BOT_RANKS[botRank].icon}</span>`:'';
  const unlockText=unlockedNext!==null?`<div class="unlockText"><span>UNLOCKED</span><strong><span class="botBadge badge-${unlockedNext} small">${BOT_RANKS[unlockedNext].icon}</span>${BOT_RANKS[unlockedNext].name.toUpperCase()}</strong></div>`:'';
- const streakText=mode==='bot'?`<div class="streakStrip"><span>🔥 ${streakNow} WIN STREAK</span><span>BEST ${bestNow}</span></div>`:'';
+ const streakText=mode==='bot'?`<div class="streakStrip"><span>STREAK <strong>${streakNow}</strong></span><span>BEST <strong>${bestNow}</strong></span></div>`:'';
  haptic([40,35,70]);tone(620,.08,.04);setTimeout(()=>tone(820,.1,.04),85);
  const d=document.createElement('div');d.className='winner';
  d.innerHTML=`<div class="winnerBox statsWinner"><div class="sub">${botBadge}${rankLine}</div><h2>${winnerName} WIN${i===0&&mode==='bot'?'':'S'}</h2>${unlockText}${streakText}<div class="awardList">${awards.map(a=>`<div class="awardCard"><span class="awardIcon">${a.icon}</span><div><span class="awardLabel">${a.label}</span><strong>${a.value}</strong></div></div>`).join('')}</div><div class="winnerActions"><button class="secondaryBtn" data-action="rematch">REMATCH</button>${unlockedNext!==null?`<button class="nextRankBtn" data-action="next">NEXT RANK</button>`:''}</div></div>`;
@@ -239,7 +239,7 @@ function renderRanks(){
  const unlocked=unlockedBotRank();
  if(botRank>unlocked)botRank=unlocked;
  $('rankBtn').innerHTML='<span class="botBadge badge-'+botRank+' tiny">'+BOT_RANKS[botRank].icon+'</span>'+BOT_RANKS[botRank].name.toUpperCase();
- $('rankList').innerHTML=`<div class="ladderStats"><span>🔥 STREAK <strong>${botStreak()}</strong></span><span>BEST <strong>${botBestStreak()}</strong></span></div>`+BOT_RANKS.map((r,i)=>{
+ $('rankList').innerHTML=`<div class="ladderStats"><span>STREAK <strong>${botStreak()}</strong></span><span>BEST <strong>${botBestStreak()}</strong></span></div>`+BOT_RANKS.map((r,i)=>{
    const locked=i>unlocked;
    return `<button class="rankOption ${i===botRank?'selected':''} ${locked?'lockedRank':''}" data-rank="${i}" ${locked?'disabled':''}><span class="rankNumber botBadge badge-${i}">${r.icon}</span><span class="rankName">${r.name}</span><span class="rankState">${locked?'LOCKED':i===botRank?'SELECTED':'PLAY'}</span></button>`;
  }).join('');
