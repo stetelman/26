@@ -238,3 +238,82 @@ header h1{color:#25231f}
 @media(max-height:740px){
   .rankCard{transform:scale(.92);transform-origin:center}
 }
+
+/* Bot ladder: hard viewport fit */
+.rankModal{
+  padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));
+  overflow:hidden;
+}
+.rankCard{
+  box-sizing:border-box;
+  width:min(430px,calc(100vw - 16px));
+  max-height:calc(100dvh - max(16px,env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+  overflow:hidden;
+  transform:none!important;
+  padding:18px 16px 14px;
+}
+.rankCard .rulesClose{
+  right:10px;
+  top:10px;
+  width:36px;
+  height:36px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  line-height:1;
+  z-index:2;
+}
+.rankCard>.sub,
+.rankCard>h2{
+  padding-right:44px;
+}
+.rankCard>.sub{margin:0 0 3px}
+.rankCard h2{margin:0 0 8px;font-size:15px;line-height:1.05}
+.rankList{display:grid;gap:5px}
+.ladderStats{
+  min-height:30px;
+  box-sizing:border-box;
+  padding:5px 0;
+  margin:0 0 1px;
+}
+.rankOption{
+  box-sizing:border-box;
+  height:48px;
+  min-height:48px;
+  padding:5px 9px;
+  gap:8px;
+  border-radius:9px;
+}
+.rankOption .botBadge{
+  width:25px;
+  height:25px;
+  min-width:25px;
+  margin:0;
+}
+.rankName{font-size:12px}
+.rankState{font-size:7px}
+.rankHint{margin:8px 0 0;font-size:9px;line-height:1.2}
+
+@media(max-height:700px){
+  .rankCard{padding:14px 14px 11px}
+  .rankCard .rulesClose{top:7px;right:7px;width:32px;height:32px;font-size:25px}
+  .rankCard>.sub{font-size:8px}
+  .rankCard h2{font-size:13px;margin-bottom:6px}
+  .ladderStats{min-height:26px;padding:3px 0}
+  .rankList{gap:4px}
+  .rankOption{height:43px;min-height:43px;padding:4px 8px}
+  .rankOption .botBadge{width:23px;height:23px;min-width:23px}
+  .rankHint{margin-top:6px;font-size:8px}
+}
+@media(max-height:610px){
+  .rankCard{padding:10px 12px 8px}
+  .rankCard>.sub{display:none}
+  .rankCard h2{font-size:12px;margin-bottom:4px}
+  .ladderStats{min-height:22px;padding:2px 0;margin-bottom:0}
+  .rankList{gap:3px}
+  .rankOption{height:38px;min-height:38px;padding:3px 7px}
+  .rankOption .botBadge{width:21px;height:21px;min-width:21px}
+  .rankHint{margin-top:4px}
+}
