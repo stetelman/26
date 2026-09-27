@@ -1184,3 +1184,8 @@ header .brandBlock>.sub{display:none!important}
   letter-spacing:.07em!important;
 }
 .directEntry{padding-top:7px!important}
+
+/* Replay records */
+.recordStrip{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:7px 0;margin:-1px 0 9px;border-bottom:1px solid var(--line);font-size:8px;font-weight:900;letter-spacing:.07em;color:var(--muted)}
+.recordStrip span{display:flex;align-items:baseline;gap:5px}.recordStrip span:last-child{justify-content:flex-end}.recordStrip strong{color:var(--text);font-size:10px;letter-spacing:0}
+.ladderStats{grid-template-columns:1fr 1fr 1fr!important}.ladderStats span:nth-child(2){justify-content:center!important}.ladderStats span:nth-child(3){justify-content:flex-end!important}.winnerActions .nextRankBtn{white-space:nowrap}
