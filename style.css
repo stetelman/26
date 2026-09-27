@@ -779,3 +779,52 @@ header h1{color:#25231f}
     font-size:6px;
   }
 }
+
+/* UI polish: quieter header, clearer opening state */
+.openingStage{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  text-align:center;
+}
+.openingStage strong{
+  font-size:15px;
+  letter-spacing:.13em;
+  color:#7f786d;
+}
+.openingStage span{
+  font-size:9px;
+  letter-spacing:.1em;
+  color:#aaa398;
+  font-weight:800;
+}
+@media(max-width:600px){
+  .headerBtns .ghost,
+  .rankBtn{
+    height:29px;
+    min-height:29px;
+    font-size:8px;
+  }
+  #rulesBtn,
+  #newGame{
+    width:29px;
+    min-width:29px!important;
+  }
+  #modeBtn{min-width:43px}
+  .rankBtn{
+    min-width:72px;
+    padding-left:6px;
+    padding-right:7px;
+  }
+  .rankBtn .botBadge.tiny{
+    width:12px;
+    height:12px;
+    min-width:12px;
+    margin-right:3px;
+  }
+  .openingStage strong{font-size:13px}
+  .openingStage span{font-size:8px}
+  .needLine{font-size:7px}
+}
