@@ -249,7 +249,7 @@ $('modeModal').onclick=e=>{if(e.target.id==='modeModal')document.body.classList.
 [...document.querySelectorAll('.modeChoice')].forEach(b=>b.onclick=()=>{
  const v=b.dataset.mode;
  if(v==='bot'){mode='bot';playerCount=2}else{mode='local';playerCount=+v}
- $('modeBtn').textContent='MODE';
+ $('modeBtn').textContent='TAB';
  $('rankBtn').style.display=mode==='bot'?'inline-flex':'none';
  document.body.classList.remove('showMode');
  reset();
