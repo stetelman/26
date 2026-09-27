@@ -146,7 +146,7 @@ function renderWords(){
    el.className='wordStream';
    const seenTutorial=localStorage.getItem(TYPESET_TUTORIAL_KEY)==='1';
    if(seenTutorial){
-     el.innerHTML='<div class="emptyStage startStage"></div>';
+     el.innerHTML='';
    }else{
      const lines=[
        'PLAY A THREE TO SEVEN LETTER WORD',
@@ -177,6 +177,25 @@ function renderWords(){
        charIndex=0;
        if(lineIndex<lines.length){
          tutorialTimer=setTimeout(typeNext,180);
+       }else{
+         tutorialTimer=setTimeout(()=>{
+           if(token!==tutorialToken)return;
+           entryPromptReady=true;
+           let p=0;
+           clearTimeout(entryPromptTimer);
+           const typePrompt=()=>{
+             if(token!==tutorialToken||typedWord)return;
+             const display=$('wordDisplay');
+             if(!display)return;
+             p++;
+             display.innerHTML='TYPE A WORD'.slice(0,p)+'<span class="cursor">|</span>';
+             display.classList.add('empty');
+             if(p<'TYPE A WORD'.length){
+               entryPromptTimer=setTimeout(typePrompt,55);
+             }
+           };
+           typePrompt();
+         },220);
        }
      };
      tutorialTimer=setTimeout(typeNext,120);
