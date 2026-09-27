@@ -37,3 +37,6 @@
   .help{display:none}
   .wordDisplay{min-height:34px}
 }
+
+.tile.lockFresh{color:#315fae}
+.tile.lockAging{color:#6f7890}
