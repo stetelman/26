@@ -80,7 +80,8 @@ function renderWords(){
    return `<div class="wordLane p${player+1}Lane"><div class="laneLabel">PLAYER ${player+1}</div><div class="laneWords">${words.map((m,i)=>{
      const age=words.length-1-i;
      const cls=age===0?'current':age===1?'prev1':age===2?'prev2':'older';
-     const letters=[...m.word].map(ch=>`<span class="${lock.has(ch)?'lockedChar':''}">${ch}</span>`).join('');
+     const isNewest=m===moveHistory[moveHistory.length-1];
+     const letters=[...m.word].map((ch,j)=>`<span class="${lock.has(ch)?'lockedChar ':''}${isNewest?'typedChar':''}"${isNewest?` style="animation-delay:${j*70}ms"`:''}>${ch}</span>`).join('');
      return `<div class="playedWord ${cls}">${letters}</div>`;
    }).join('')||'<div class="laneEmpty">—</div>'}</div></div>`;
  }).join('<div class="laneDivider"></div>');
