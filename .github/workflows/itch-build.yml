@@ -1,0 +1,28 @@
+name: Build itch package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - style.css
+      - game.js
+      - .github/workflows/itch-build.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Stage itch build
+        run: |
+          mkdir -p itch-build
+          cp index.html style.css game.js itch-build/
+      - name: Upload itch package
+        uses: actions/upload-artifact@v4
+        with:
+          name: TYPESET-itch
+          path: itch-build/
+          if-no-files-found: error
