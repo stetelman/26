@@ -1,1 +1,9 @@
-{"name":"26-out-prototype","private":true,"version":"0.1.1","scripts":{"dev":"npx serve .","build":"rm -rf public && mkdir public && cp index.html style.css game.js public/"}}
+{
+  "name": "26-out-prototype",
+  "private": true,
+  "version": "0.1.1",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "rm -rf public && mkdir -p public/print && cp index.html style.css game.js game-analytics.js public/ && cp print/index.html print/TYPESET_Print_and_Play.pdf public/print/"
+  }
+}
