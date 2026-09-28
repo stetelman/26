@@ -33,6 +33,22 @@ let entryPromptTimer=null;
 let entryPromptReady=false;
 const $=id=>document.getElementById(id);
 
+function analyticsSource(){
+ try{
+   const r=document.referrer||'';
+   if(/itch\.io/i.test(r))return 'itch';
+   if(location.hostname.includes('vercel.app'))return 'vercel';
+   return r?'referral':'direct';
+ }catch{return 'unknown'}
+}
+function trackEvent(name,data={}){
+ try{
+   if(typeof window.va==='function'){
+     window.va('event',{name,data:{source:analyticsSource(),...data}});
+   }
+ }catch{}
+}
+
 Promise.all([
  fetch('https://raw.githubusercontent.com/dolph/dictionary/master/enable1.txt').then(r=>r.ok?r.text():Promise.reject()),
  fetch('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt').then(r=>r.ok?r.text():Promise.reject())
@@ -73,6 +89,13 @@ function play(){
 }
 function commit(word,source){
  const actor=activePlayer();const lock=lockedLetters();const gained=turn===0?[]:gainedBy(word,current());
+ if(turn===0){
+   trackEvent('Match Started',{
+     mode,
+     players:players.length,
+     botRank:mode==='bot'?String.fromCharCode(65+botRank):'none'
+   });
+ }
  for(const ch of gained)current().got.add(ch);
  for(const ch of new Set(word))if(!lock.has(ch))lockUntil.set(ch,turn+2);
  moveHistory.push({player:actor,word,gained,source});
@@ -266,6 +289,16 @@ function tone(freq=520,duration=.05,volume=.035){
  }catch{}
 }
 function showWinner(i){
+ const humanWon=mode==='bot'?i===0:null;
+ trackEvent('Match Completed',{
+   mode,
+   players:players.length,
+   botRank:mode==='bot'?String.fromCharCode(65+botRank):'none',
+   result:mode==='bot'?(humanWon?'win':'loss'):'completed',
+   winner:mode==='bot'?(humanWon?'human':'bot'):'player'+(i+1),
+   turns:moveHistory.length,
+   humanWords:moveHistory.filter(m=>m.player===0).length
+ });
  localStorage.setItem(TYPESET_TUTORIAL_KEY,'1');
  const botWords=moveHistory.filter(m=>m.source==='bot').map(m=>m.word);if(botWords.length)saveBotGameWords(botWords);
  let unlockedNext=null;
