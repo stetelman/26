@@ -1,1 +1,15 @@
-{"cleanUrls":true,"trailingSlash":false,"outputDirectory":"public"}
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/print",
+      "destination": "/print/index.html"
+    },
+    {
+      "source": "/print/",
+      "destination": "/print/index.html"
+    }
+  ]
+}
