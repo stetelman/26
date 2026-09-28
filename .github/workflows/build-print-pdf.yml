@@ -1,0 +1,95 @@
+name: Build print and play PDF
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/build-print-pdf.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install reportlab
+      - name: Generate PDF
+        shell: bash
+        run: |
+          mkdir -p print
+          cat > /tmp/make_pdf.py <<'PY'
+          from reportlab.pdfgen import canvas
+          from reportlab.lib.pagesizes import landscape, letter
+          from reportlab.lib.colors import HexColor
+          from reportlab.pdfbase.pdfmetrics import stringWidth
+          from reportlab.lib.units import inch
+
+          out = "print/TYPESET_Print_and_Play.pdf"
+          W,H = landscape(letter)
+          c=canvas.Canvas(out,pagesize=(W,H))
+          BG=HexColor("#F2EEE6"); PAPER=HexColor("#FFFDF8"); INK=HexColor("#24211D")
+          MUTED=HexColor("#746E64"); LINE=HexColor("#CFC8BC"); HEADER=HexColor("#E9E4DA")
+          c.setFillColor(BG); c.rect(0,0,W,H,fill=1,stroke=0)
+          m=.34*inch
+          c.setFillColor(INK); c.setFont("Helvetica-Bold",24); c.drawString(m,H-m-3,"TYPESET")
+          c.setFillColor(MUTED); c.setFont("Helvetica-Bold",8); c.drawRightString(W-m,H-m,"WORD LOG  /  PRINT + PLAY")
+          c.setFillColor(INK); c.setFont("Helvetica-Bold",9)
+          c.drawString(m,H-m-26,"Cross off letters as you collect them. Record each word and the letters locked for the next turn.")
+          tracker_top=H-m-42; tracker_h=105; gap=10; tracker_w=(W-2*m-gap)/2
+
+          def tracker(x,y,w,h,label):
+              c.setFillColor(PAPER); c.setStrokeColor(LINE); c.roundRect(x,y,w,h,7,fill=1,stroke=1)
+              c.setFillColor(INK); c.setFont("Helvetica-Bold",10); c.drawString(x+10,y+h-17,label)
+              c.setFillColor(MUTED); c.setFont("Helvetica",7); c.drawString(x+66,y+h-17,"NAME: ______________________")
+              letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ"; cols=13; pad=10; gx=2
+              bw=(w-2*pad-gx*(cols-1))/cols; bh=22; first_y=y+h-48
+              for i,ch in enumerate(letters):
+                  row=i//13; col=i%13; bx=x+pad+col*(bw+gx); by=first_y-row*(bh+6)
+                  c.setFillColor(PAPER); c.setStrokeColor(LINE); c.roundRect(bx,by,bw,bh,3,fill=1,stroke=1)
+                  c.setFillColor(INK); c.setFont("Helvetica-Bold",8.5)
+                  tw=stringWidth(ch,"Helvetica-Bold",8.5); c.drawString(bx+(bw-tw)/2,by+7,ch)
+              c.setFillColor(MUTED); c.setFont("Helvetica-Bold",6.5); c.drawRightString(x+w-10,y+8,"____ / 26")
+
+          ty=tracker_top-tracker_h
+          tracker(m,ty,tracker_w,tracker_h,"PLAYER 1")
+          tracker(m+tracker_w+gap,ty,tracker_w,tracker_h,"PLAYER 2")
+
+          table_top=ty-12; table_bottom=.48*inch; table_x=m; table_w=W-2*m
+          c.setFillColor(PAPER); c.setStrokeColor(LINE); c.roundRect(table_x,table_bottom,table_w,table_top-table_bottom,7,fill=1,stroke=1)
+          title_h=26
+          c.setFillColor(INK); c.setFont("Helvetica-Bold",10); c.drawString(table_x+10,table_top-17,"WORD / LOCK LOG")
+          c.setFillColor(MUTED); c.setFont("Helvetica",6.8); c.drawRightString(table_x+table_w-10,table_top-17,"Opening word scores 0 letters but still locks its letters.")
+          header_top=table_top-title_h; header_h=22
+          cols=[30,42,165,180,table_w-30-42-165-180]; heads=["#","P","WORD","NEW LETTERS","LOCKED NEXT"]
+          c.setFillColor(HEADER); c.rect(table_x,header_top-header_h,table_w,header_h,fill=1,stroke=0)
+          cx=table_x; c.setStrokeColor(LINE)
+          for cw in cols[:-1]:
+              cx+=cw; c.line(cx,table_bottom,cx,header_top)
+          cx=table_x; c.setFillColor(INK); c.setFont("Helvetica-Bold",7.2)
+          for label,cw in zip(heads,cols):
+              c.drawCentredString(cx+cw/2,header_top-header_h+7,label); cx+=cw
+          row_h=23; usable=header_top-header_h-table_bottom; rows=int(usable//row_h)
+          for r in range(rows):
+              y=header_top-header_h-(r+1)*row_h
+              c.setStrokeColor(LINE); c.setLineWidth(.55); c.line(table_x,y,table_x+table_w,y)
+              c.setFillColor(MUTED); c.setFont("Helvetica",6.8)
+              c.drawCentredString(table_x+cols[0]/2,y+8,str(r+1))
+              c.drawCentredString(table_x+cols[0]+cols[1]/2,y+8,"1" if r%2==0 else "2")
+          c.setFillColor(MUTED); c.setFont("Helvetica-Bold",6.5)
+          c.drawString(m,.19*inch,"FIRST TO CROSS OFF ALL 26 LETTERS WINS.")
+          c.drawRightString(W-m,.19*inch,"LAST WORD'S LETTERS ARE LOCKED FOR THE NEXT PLAYER.")
+          c.showPage(); c.save()
+          PY
+          python /tmp/make_pdf.py
+      - name: Commit PDF
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add print/TYPESET_Print_and_Play.pdf
+          git diff --cached --quiet || git commit -m "Build print and play PDF"
+          git push
